@@ -1,5 +1,6 @@
-# File koneksi database (SENSITIF)
-config/koneksi.php
+# JANGAN ignore file koneksi
+# config/koneksi.php
+
 
 # Folder database / dump SQL
 DATABASE/
