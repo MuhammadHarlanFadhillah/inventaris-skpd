@@ -2,11 +2,16 @@
 // =======================================================
 // KONEKSI & HEADER
 // =======================================================
+// Nyalakan error reporting untuk debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 include '../config/koneksi.php';
 include '../layout/header.php';
 
+// Validasi koneksi database
 if (!isset($conn)) {
-    die('Koneksi database tidak tersedia.');
+    die('<div class="alert alert-danger">Koneksi database tidak tersedia. Cek config/koneksi.php</div>');
 }
 ?>
 
@@ -25,9 +30,7 @@ if (!isset($conn)) {
 
         <a href="hapus_semua.php"
            class="btn btn-danger shadow-sm rounded-pill px-4"
-           onclick="return confirm(
-               '⚠️ PERINGATAN!\n\nSemua transaksi akan dihapus.\nStok semua barang akan di-reset ke 0.\n\nYakin ingin melanjutkan?'
-           )">
+           onclick="return confirm('⚠️ PERINGATAN!\n\nSemua riwayat transaksi akan dihapus permanen.\nStok barang tidak akan dikembalikan.\n\nYakin ingin melanjutkan?')">
             <i class="fas fa-trash-alt me-2"></i>Hapus Semua
         </a>
     </div>
@@ -50,17 +53,18 @@ if (!isset($conn)) {
                 <tbody>
                     <?php
                     // =======================================================
-                    // QUERY TRANSAKSI (FIXED: Lowercase Tables & Columns)
+                    // QUERY (FULL LOWERCASE)
                     // =======================================================
+                    // Kita pakai 'AS' alias untuk memaksa nama kolom output jadi huruf kecil
                     $query = "
                         SELECT 
-                            h.id_stok,
-                            h.tgl_periode,
-                            b.id_barang,
-                            b.nama_barang,
-                            d.kuantitas_masuk,
-                            d.kuantitas_keluar,
-                            d.harga_satuan
+                            h.id_stok AS id_stok, 
+                            h.tgl_periode AS tgl_periode,
+                            b.id_barang AS id_barang, 
+                            b.nama_barang AS nama_barang,
+                            d.kuantitas_masuk AS kuantitas_masuk, 
+                            d.kuantitas_keluar AS kuantitas_keluar, 
+                            d.harga_satuan AS harga_satuan
                         FROM stok_persediaan h
                         JOIN detail_stok d ON h.id_stok = d.id_stok
                         JOIN barang b ON d.id_barang = b.id_barang
@@ -70,71 +74,58 @@ if (!isset($conn)) {
                     $result = mysqli_query($conn, $query);
 
                     // =======================================================
-                    // JIKA DATA KOSONG
+                    // CEK ERROR & TAMPILKAN DATA
                     // =======================================================
-                    if (!$result || mysqli_num_rows($result) == 0) {
-                        echo "
-                            <tr>
-                                <td class='text-center text-muted'>-</td>
-                                <td class='text-center text-muted'>Belum ada transaksi</td>
-                                <td class='text-center text-muted'>-</td>
-                                <td class='text-center text-muted'>-</td>
-                                <td class='text-center text-muted'>-</td>
-                                <td class='text-center text-muted'>-</td>
-                            </tr>
-                        ";
-                    } else {
-
+                    if (!$result) {
+                        // Jika Query Error (Biasanya karena salah nama tabel)
+                        echo "<tr><td colspan='6' class='text-center text-danger fw-bold py-5'>";
+                        echo "<i class='fas fa-exclamation-triangle fa-2x mb-3'></i><br>";
+                        echo "Gagal mengambil data transaksi.<br>";
+                        echo "<small>Error SQL: " . mysqli_error($conn) . "</small>";
+                        echo "</td></tr>";
+                    } 
+                    elseif (mysqli_num_rows($result) == 0) {
+                        // Jika Data Kosong
+                        echo "<tr><td colspan='6' class='text-center text-muted py-5'>Belum ada transaksi yang tercatat.</td></tr>";
+                    } 
+                    else {
+                        // Loop Data
                         while ($row = mysqli_fetch_assoc($result)) {
-
-                            // FIX: Access array keys using lowercase or fallback to uppercase
-                            $qty_masuk  = $row['kuantitas_masuk'] ?? $row['KUANTITAS_MASUK'];
-                            $qty_keluar = $row['kuantitas_keluar'] ?? $row['KUANTITAS_KELUAR'];
-                            $tgl        = $row['tgl_periode'] ?? $row['TGL_PERIODE'];
-                            $nama_brg   = $row['nama_barang'] ?? $row['NAMA_BARANG'];
-                            $id_brg     = $row['id_barang'] ?? $row['ID_BARANG'];
-                            $harga      = $row['harga_satuan'] ?? $row['HARGA_SATUAN'];
-                            $id_stok    = $row['id_stok'] ?? $row['ID_STOK'];
-
-                            if ($qty_masuk > 0) {
-                                $jenis = "
-                                    <span class='badge bg-success bg-opacity-10 text-success px-3 rounded-pill'>
-                                        <i class='fas fa-arrow-down me-1'></i>Masuk
-                                    </span>
-                                ";
-                                $qty = $qty_masuk;
+                            
+                            // LOGIKA JENIS TRANSAKSI
+                            if ($row['kuantitas_masuk'] > 0) {
+                                $jenis = "<span class='badge bg-success bg-opacity-10 text-success px-3 rounded-pill'><i class='fas fa-arrow-down me-1'></i>Masuk</span>";
+                                $qty = $row['kuantitas_masuk'];
                                 $warna_qty = "text-success";
                             } else {
-                                $jenis = "
-                                    <span class='badge bg-danger bg-opacity-10 text-danger px-3 rounded-pill'>
-                                        <i class='fas fa-arrow-up me-1'></i>Keluar
-                                    </span>
-                                ";
-                                $qty = $qty_keluar;
+                                $jenis = "<span class='badge bg-danger bg-opacity-10 text-danger px-3 rounded-pill'><i class='fas fa-arrow-up me-1'></i>Keluar</span>";
+                                $qty = $row['kuantitas_keluar'];
                                 $warna_qty = "text-danger";
                             }
                     ?>
                             <tr>
                                 <td class="ps-4 text-muted">
-                                    <?= date('d M Y', strtotime($tgl)); ?>
+                                    <?= date('d M Y', strtotime($row['tgl_periode'])); ?>
                                 </td>
                                 <td>
                                     <span class="fw-bold text-dark">
-                                        <?= htmlspecialchars($nama_brg); ?>
+                                        <?= htmlspecialchars($row['nama_barang']); ?>
                                     </span><br>
                                     <small class="text-muted">
-                                        Kode: <?= htmlspecialchars($id_brg); ?>
+                                        Kode: <?= htmlspecialchars($row['id_barang']); ?>
                                     </small>
                                 </td>
                                 <td class="text-center"><?= $jenis; ?></td>
-                                <td class="text-center fw-bold <?= $warna_qty; ?>"><?= $qty; ?></td>
+                                <td class="text-center fw-bold <?= $warna_qty; ?>">
+                                    <?= $qty; ?>
+                                </td>
                                 <td class="text-end fw-bold text-secondary">
-                                    Rp <?= number_format($harga, 0, ',', '.'); ?>
+                                    Rp <?= number_format($row['harga_satuan'], 0, ',', '.'); ?>
                                 </td>
                                 <td class="text-center pe-4">
-                                    <a href="hapus.php?id=<?= $id_stok; ?>"
-                                       class="btn btn-sm btn-outline-danger"
-                                       onclick="return confirm('Yakin hapus transaksi ini?\nStok akan otomatis dikembalikan!')">
+                                    <a href="hapus.php?id=<?= $row['id_stok']; ?>" 
+                                       class="btn btn-sm btn-outline-danger" 
+                                       onclick="return confirm('Yakin ingin menghapus riwayat transaksi ini?\nStok barang akan otomatis disesuaikan kembali.')">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </td>

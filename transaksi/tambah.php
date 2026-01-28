@@ -1,114 +1,100 @@
 <?php 
-// NYALAKAN ERROR REPORTING (SUPAYA GAK BLANK PUTIH)
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// 1. MULAI BUFFERING (PENTING: Biar gak error header/blank page)
+ob_start();
 
+// 2. INCLUDE KONEKSI
 include '../config/koneksi.php';
-include '../layout/header.php'; 
 
 // ===============================================================
-// LOGIKA PENYIMPANAN TRANSAKSI
+// LOGIKA PENYIMPANAN DATA (DITARUH DI PALING ATAS)
 // ===============================================================
 if (isset($_POST['simpan_transaksi'])) {
 
-    // 1. DATA INPUT
+    // A. TANGKAP INPUTAN
     $id_barang = trim($_POST['id_barang']);
     $tanggal   = $_POST['tanggal'];
     $jenis     = $_POST['jenis']; // MASUK / KELUAR
     $jumlah    = (int) $_POST['jumlah'];
-
-    // Bersihkan format rupiah
-    $harga_raw = $_POST['harga'];
-    $harga_fix = str_replace('.', '', $harga_raw);
-
-    // 2. GENERATE ID TRANSAKSI
-    $id_stok = "TRX-" . time() . rand(100, 999);
     
-    // Default SKPD (Sesuaikan kalau tabel SKPD lu kosong/beda)
-    // Kalau error constraint, coba ganti NULL atau hapus kolom ini dari query
-    $id_skpd = "SKPD-01"; 
+    // Bersihkan format rupiah (hapus titik)
+    $harga_fix = str_replace('.', '', $_POST['harga']);
+
+    // B. GENERATE ID OTOMATIS
+    $id_stok = "TRX-" . time() . rand(100, 999);
+    $id_skpd = "SKPD-01"; // Default ID SKPD
 
     $error = false;
 
-    // 3. VALIDASI STOK (KHUSUS BARANG KELUAR)
+    // C. VALIDASI STOK (KHUSUS BARANG KELUAR)
+    // Query SELECT pakai huruf kecil semua
     if ($jenis == 'KELUAR') {
-        $cek_stok = mysqli_query($conn, "SELECT stok_akhir, nama_barang FROM barang WHERE id_barang = '$id_barang'");
+        $cek = mysqli_query($conn, "SELECT stok_akhir, nama_barang FROM barang WHERE id_barang = '$id_barang'");
+        $d = mysqli_fetch_assoc($cek);
         
-        if (!$cek_stok) { die("Error Cek Stok: " . mysqli_error($conn)); }
-        
-        $data_stok = mysqli_fetch_assoc($cek_stok);
-
-        $stok_db = $data_stok['stok_akhir'] ?? $data_stok['STOK_AKHIR'];
-        $nama_db = $data_stok['nama_barang'] ?? $data_stok['NAMA_BARANG'];
+        // Ambil data (paksa huruf kecil)
+        $stok_db = $d['stok_akhir'] ?? 0;
+        $nama_db = $d['nama_barang'] ?? 'Barang';
 
         if ($stok_db < $jumlah) {
-            echo "<script>alert('⛔ TRANSAKSI DITOLAK! Stok $nama_db cuma sisa $stok_db.');</script>";
+            echo "<script>alert('⛔ TRANSAKSI DITOLAK!\\n\\nStok $nama_db cuma sisa $stok_db.');</script>";
             $error = true;
         }
     }
 
-    // 4. PROSES INSERT
+    // D. EKSEKUSI SIMPAN
     if (!$error) {
-
-        // A. INSERT HEADER (TABEL stok_persediaan)
-        // REVISI: Gw hapus kolom 'stok_sisa' disini, karena biasanya itu adanya di tabel barang, bukan di riwayat transaksi.
-        // Kalau tabel lu butuh id_skpd, pastikan data 'SKPD-01' ada di tabel master SKPD.
-        // Kalau masih error, hapus ", id_skpd" dan ", '$id_skpd'"
-        $query_header = "
-            INSERT INTO stok_persediaan (id_stok, id_skpd, tgl_periode)
-            VALUES ('$id_stok', '$id_skpd', '$tanggal')
-        ";
-
-        // DEBUG: Kalau gagal, langsung matikan program dan kasih tau errornya
-        $exec_header = mysqli_query($conn, $query_header);
-        if (!$exec_header) {
-            die("<div class='alert alert-danger'>
-                    <strong>Error Header:</strong> " . mysqli_error($conn) . "<br>
-                    Coba cek apakah tabel 'stok_persediaan' punya kolom 'id_skpd'? 
-                    Atau ID 'SKPD-01' sudah ada di tabel SKPD?
-                 </div>");
-        }
-
-        // Tentukan kuantitas detail
-        $q_masuk  = ($jenis == 'MASUK')  ? $jumlah : 0;
-        $q_keluar = ($jenis == 'KELUAR') ? $jumlah : 0;
-
-        // B. INSERT DETAIL (TABEL detail_stok)
-        $query_detail = "
-            INSERT INTO detail_stok 
-                (id_stok, id_barang, harga_satuan, kuantitas_masuk, kuantitas_keluar)
-            VALUES 
-                ('$id_stok', '$id_barang', '$harga_fix', '$q_masuk', '$q_keluar')
-        ";
-
-        $exec_detail = mysqli_query($conn, $query_detail);
-
-        if ($exec_detail) {
+        
+        // 1. INSERT KE TABEL HEADER (stok_persediaan) -> HURUF KECIL
+        $q_header = "INSERT INTO stok_persediaan (id_stok, id_skpd, tgl_periode) 
+                     VALUES ('$id_stok', '$id_skpd', '$tanggal')";
+        
+        if (mysqli_query($conn, $q_header)) {
             
-            // C. UPDATE STOK BARANG OTOMATIS
-            if ($jenis == 'MASUK') {
-                $q_update = "UPDATE barang SET stok_akhir = stok_akhir + $jumlah WHERE id_barang = '$id_barang'";
+            // Tentukan masuk/keluar
+            $q_masuk  = ($jenis == 'MASUK')  ? $jumlah : 0;
+            $q_keluar = ($jenis == 'KELUAR') ? $jumlah : 0;
+
+            // 2. INSERT KE TABEL DETAIL (detail_stok) -> HURUF KECIL
+            $q_detail = "INSERT INTO detail_stok (id_stok, id_barang, harga_satuan, kuantitas_masuk, kuantitas_keluar) 
+                         VALUES ('$id_stok', '$id_barang', '$harga_fix', '$q_masuk', '$q_keluar')";
+
+            if (mysqli_query($conn, $q_detail)) {
+                
+                // 3. UPDATE STOK BARANG OTOMATIS -> HURUF KECIL
+                if ($jenis == 'MASUK') {
+                    $q_update = "UPDATE barang SET stok_akhir = stok_akhir + $jumlah WHERE id_barang = '$id_barang'";
+                } else {
+                    $q_update = "UPDATE barang SET stok_akhir = stok_akhir - $jumlah WHERE id_barang = '$id_barang'";
+                }
+                mysqli_query($conn, $q_update);
+
+                // 4. SUKSES & REDIRECT (Pakai JS biar gak Blank)
+                echo "<script>
+                    alert('✅ Transaksi berhasil disimpan!');
+                    window.location.href = 'index.php?status=sukses';
+                </script>";
+                exit; 
+
             } else {
-                $q_update = "UPDATE barang SET stok_akhir = stok_akhir - $jumlah WHERE id_barang = '$id_barang'";
+                // Gagal Detail
+                echo "<script>alert('Error Detail: " . mysqli_error($conn) . "');</script>";
+                // Hapus header biar gak nyampah
+                mysqli_query($conn, "DELETE FROM stok_persediaan WHERE id_stok='$id_stok'");
             }
-            
-            mysqli_query($conn, $q_update);
-
-            echo "<script>
-                alert('✅ Transaksi berhasil disimpan!');
-                window.location = 'index.php';
-            </script>";
         } else {
-            // Hapus header kalau detail gagal biar gak nyampah
-            mysqli_query($conn, "DELETE FROM stok_persediaan WHERE id_stok='$id_stok'");
-            die("<div class='alert alert-danger'>Error Detail: " . mysqli_error($conn) . "</div>");
+            // Gagal Header
+            echo "<script>alert('Error Header: " . mysqli_error($conn) . "');</script>";
         }
     }
 }
+// AKHIR LOGIKA PHP
 ?>
+
+<?php include '../layout/header.php'; ?>
 
 <div class="row justify-content-center">
     <div class="col-lg-6 col-md-8">
+        
         <div class="mb-3">
             <a href="index.php" class="text-decoration-none text-muted">
                 <i class="fas fa-arrow-left me-2"></i>Kembali ke Riwayat
@@ -119,19 +105,27 @@ if (isset($_POST['simpan_transaksi'])) {
             <div class="card-header bg-primary text-white py-3">
                 <h5 class="mb-0 fw-bold"><i class="fas fa-cart-plus me-2"></i>Form Transaksi</h5>
             </div>
+            
             <div class="card-body p-4 bg-white">
                 <form method="POST">
+                    
                     <div class="mb-3">
                         <label class="form-label fw-bold">Pilih Barang</label>
                         <select name="id_barang" class="form-select bg-light" required>
                             <option value="">-- Cari Barang --</option>
                             <?php
-                            $b = mysqli_query($conn, "SELECT id_barang, nama_barang, stok_akhir FROM barang ORDER BY nama_barang ASC");
+                            // Query Barang (Huruf Kecil & Alias biar aman)
+                            $q_brg = "SELECT id_barang, nama_barang, stok_akhir, satuan FROM barang ORDER BY nama_barang ASC";
+                            $b = mysqli_query($conn, $q_brg);
+                            
                             while ($row = mysqli_fetch_assoc($b)) {
+                                // Ambil data aman (lowercase priority)
                                 $id   = $row['id_barang'] ?? $row['ID_BARANG'];
                                 $nama = $row['nama_barang'] ?? $row['NAMA_BARANG'];
                                 $stok = $row['stok_akhir'] ?? $row['STOK_AKHIR'];
-                                echo "<option value='{$id}'>{$nama} (Sisa: {$stok})</option>";
+                                $sat  = $row['satuan'] ?? $row['SATUAN'];
+                                
+                                echo "<option value='{$id}'>{$nama} (Sisa: {$stok} {$sat})</option>";
                             }
                             ?>
                         </select>
@@ -143,7 +137,7 @@ if (isset($_POST['simpan_transaksi'])) {
                             <input type="date" name="tanggal" class="form-control" value="<?= date('Y-m-d'); ?>" required>
                         </div>
                         <div class="col-6 mb-3">
-                            <label class="form-label fw-bold">Harga (Rp)</label>
+                            <label class="form-label fw-bold">Harga Satuan (Rp)</label>
                             <input type="text" name="harga" id="rupiah" class="form-control" placeholder="0" required>
                         </div>
                     </div>
@@ -152,23 +146,28 @@ if (isset($_POST['simpan_transaksi'])) {
                         <label class="form-label fw-bold d-block">Jenis Transaksi</label>
                         <div class="btn-group w-100" role="group">
                             <input type="radio" class="btn-check" name="jenis" id="m" value="MASUK" checked>
-                            <label class="btn btn-outline-success py-2" for="m">Barang Masuk</label>
+                            <label class="btn btn-outline-success py-2" for="m">
+                                <i class="fas fa-arrow-down me-2"></i>Barang Masuk
+                            </label>
 
                             <input type="radio" class="btn-check" name="jenis" id="k" value="KELUAR">
-                            <label class="btn btn-outline-danger py-2" for="k">Barang Keluar</label>
+                            <label class="btn btn-outline-danger py-2" for="k">
+                                <i class="fas fa-arrow-up me-2"></i>Barang Keluar
+                            </label>
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label fw-bold">Jumlah</label>
-                        <input type="number" name="jumlah" class="form-control" min="1" required>
+                        <label class="form-label fw-bold">Jumlah Barang</label>
+                        <input type="number" name="jumlah" class="form-control form-control-lg" min="1" placeholder="Masukkan jumlah..." required>
                     </div>
 
                     <div class="d-grid">
-                        <button type="submit" name="simpan_transaksi" class="btn btn-primary rounded-pill shadow">
+                        <button type="submit" name="simpan_transaksi" class="btn btn-primary rounded-pill shadow btn-lg">
                             Simpan Transaksi
                         </button>
                     </div>
+
                 </form>
             </div>
         </div>
@@ -176,7 +175,6 @@ if (isset($_POST['simpan_transaksi'])) {
 </div>
 
 <script>
-// Script Format Rupiah
 var rupiah = document.getElementById('rupiah');
 rupiah.addEventListener('keyup', function(e){
     rupiah.value = formatRupiah(this.value);
@@ -195,4 +193,7 @@ function formatRupiah(angka){
 }
 </script>
 
-<?php include '../layout/footer.php'; ?>
+<?php 
+include '../layout/footer.php'; 
+ob_end_flush(); // SELESAI BUFFER
+?>
