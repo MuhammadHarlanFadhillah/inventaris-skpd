@@ -8,13 +8,16 @@ include '../config/koneksi.php';
 
 // ==========================================================
 // [PENTING] AUTO-FIX DATABASE
-// Kita hapus Trigger bawaan Windows yang bikin Error 'Table BARANG doesn't exist'
+// Kita hapus Trigger bawaan yang bikin Error 'Table BARANG doesn't exist'
+// Railway (Linux) case-sensitive, trigger pakai huruf besar BARANG -> ERROR
 // ==========================================================
 mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_masuk");
 mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_keluar");
 mysqli_query($conn, "DROP TRIGGER IF EXISTS barang_masuk");
 mysqli_query($conn, "DROP TRIGGER IF EXISTS barang_keluar");
 mysqli_query($conn, "DROP TRIGGER IF EXISTS TG_STOK_UPDATE");
+mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_after_insert");
+mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_after_delete");
 // ==========================================================
 
 if (isset($_POST['simpan'])) {

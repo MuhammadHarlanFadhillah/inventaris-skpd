@@ -36,8 +36,7 @@ include '../layout/header.php';
                     <tbody>
                         <?php
                         // Query Table tetap huruf kecil (karena nama tabel di Linux sensitive)
-                        $sql = "SELECT * FROM barang ORDER BY ID_BARANG DESC"; 
-                        // Note: Kalau error order by, ganti ID_BARANG jadi id_barang. Tapi biasanya kolom aman.
+                        $sql = "SELECT * FROM barang ORDER BY id_barang DESC"; 
                         
                         $query = mysqli_query($conn, $sql);
 
