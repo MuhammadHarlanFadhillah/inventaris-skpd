@@ -1,24 +1,40 @@
 <?php
 session_start();
-// REVISI PATH: Ambil koneksi dari folder config
+// Pastikan path ini benar mengarah ke file koneksi.php
 include 'config/koneksi.php';
 
-if(isset($_POST['btn_login'])){
+if (isset($_POST['btn_login'])) {
+    // Ambil input
     $username = mysqli_real_escape_string($conn, $_POST['username']);
+    // Pastikan enkripsi password di database memang MD5. Kalau plain text, hapus md5().
     $password = md5($_POST['password']); 
 
-    $query = mysqli_query($conn, "SELECT * FROM USER WHERE USERNAME='$username' AND PASSWORD='$password'");
-    $cek   = mysqli_num_rows($query);
+    // PERBAIKAN 1: Tabel 'user' huruf kecil (Wajib buat Railway/Linux)
+    // PERBAIKAN 2: Kolom 'username' & 'password' asumsi huruf kecil
+    $query = mysqli_query($conn, "SELECT * FROM user WHERE username='$username' AND password='$password'");
+    
+    // Cek error query buat debugging kalau masih gagal
+    if (!$query) {
+        die("Query Error: " . mysqli_error($conn));
+    }
 
-    if($cek > 0){
+    $cek = mysqli_num_rows($query);
+
+    if ($cek > 0) {
         $data = mysqli_fetch_assoc($query);
-        $_SESSION['status'] = "login";
-        $_SESSION['id_user'] = $data['ID_USER'];
-        $_SESSION['nama']   = $data['NAMA_LENGKAP'];
-        $_SESSION['level']  = $data['LEVEL'];
+
+        // Regenerate ID biar aman (Security Best Practice)
+        session_regenerate_id(true);
+
+        // PERBAIKAN 3: Key array huruf kecil (sesuai output mysqli_fetch_assoc standar)
+        // Gunakan Null Coalescing (??) buat jaga-jaga kalau di DB lu kolomnya kapital
+        $_SESSION['status']   = "login";
+        $_SESSION['id_user']  = $data['id_user'] ?? $data['ID_USER']; 
+        $_SESSION['nama']     = $data['nama_lengkap'] ?? $data['NAMA_LENGKAP'];
+        $_SESSION['level']    = $data['level'] ?? $data['LEVEL'];
 
         echo "<script>
-                alert('Selamat Datang, " . $data['NAMA_LENGKAP'] . "!');
+                alert('Selamat Datang, " . ($_SESSION['nama']) . "!');
                 window.location='index.php';
               </script>";
     } else {
