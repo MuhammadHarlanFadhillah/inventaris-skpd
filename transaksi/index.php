@@ -30,7 +30,7 @@ include '../layout/header.php';
                 </thead>
                 <tbody>
                     <?php
-                    // QUERY AMAN (ALIAS HURUF KECIL)
+                    // QUERY (Alias Huruf Kecil biar aman)
                     $q = "SELECT 
                             h.id_stok AS id_stok, h.tgl_periode AS tgl_periode,
                             b.nama_barang AS nama_barang, b.id_barang AS id_barang,
@@ -44,7 +44,7 @@ include '../layout/header.php';
 
                     if (mysqli_num_rows($res) > 0) {
                         while ($row = mysqli_fetch_assoc($res)) {
-                            // TENTUKAN JENIS
+                            // Logic Jenis
                             if ($row['q_in'] > 0) {
                                 $jenis = "<span class='badge bg-success bg-opacity-10 text-success'>Masuk</span>";
                                 $qty = $row['q_in'];
@@ -71,15 +71,16 @@ include '../layout/header.php';
                     <?php 
                         }
                     } else { 
-                        // KALAU KOSONG, TAMPILKAN 6 KOLOM JUGA BIAR GAK ERROR
+                        // KOSONG: Tampilkan 6 kolom kosong (JANGAN PAKE COLSPAN)
+                        // DataTables error kalau jumlah td beda sama th
                     ?>
                     <tr>
-                        <td>-</td>
-                        <td>Belum ada data</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
+                        <td class="text-center">-</td>
+                        <td class="text-center">Belum ada data</td>
+                        <td class="text-center">-</td>
+                        <td class="text-center">-</td>
+                        <td class="text-center">-</td>
+                        <td class="text-center">-</td>
                     </tr>
                     <?php } ?>
                 </tbody>

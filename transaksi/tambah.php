@@ -1,6 +1,14 @@
 <?php 
-ob_start(); // Anti Blank
+ob_start(); 
 include '../config/koneksi.php';
+
+// --- BAGIAN INI AKAN MEMBERSIHKAN DATABASE LU DARI ERROR TRIGGER ---
+// Kita hapus trigger bawaan Windows yg bikin error di Railway
+mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_masuk");
+mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_keluar");
+mysqli_query($conn, "DROP TRIGGER IF EXISTS barang_masuk");
+mysqli_query($conn, "DROP TRIGGER IF EXISTS barang_keluar");
+// -------------------------------------------------------------------
 
 if (isset($_POST['simpan'])) {
     $id_brg = $_POST['id_barang'];
@@ -26,11 +34,11 @@ if (isset($_POST['simpan'])) {
            VALUES ('$id_stok', '$id_brg', '$harga', '$qin', '$qout')";
     
     if (!mysqli_query($conn, $q2)) {
-        mysqli_query($conn, "DELETE FROM stok_persediaan WHERE id_stok='$id_stok'"); // Rollback manual
+        mysqli_query($conn, "DELETE FROM stok_persediaan WHERE id_stok='$id_stok'"); // Rollback
         die("<h3>Gagal Detail: " . mysqli_error($conn) . "</h3>");
     }
 
-    // 3. UPDATE STOK (Pakai PHP biar Trigger Database gak error)
+    // 3. UPDATE STOK (Manual lewat PHP, karena Trigger udah dihapus)
     if ($jenis == 'MASUK') {
         mysqli_query($conn, "UPDATE barang SET stok_akhir = stok_akhir + $jml WHERE id_barang = '$id_brg'");
     } else {
