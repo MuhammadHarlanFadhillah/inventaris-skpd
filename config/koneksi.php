@@ -1,7 +1,7 @@
 <?php
 date_default_timezone_set('Asia/Jakarta');
 
-$base_url = "https://inventaris-skpd-production.up.railway.app/"; // Ganti domain railway lu
+$base_url = "https://inventaris-skpd.app"; // Ganti domain railway lu
 
 // PAKE GETENV (Lebih aman buat Server)
 $host = getenv('MYSQLHOST');
