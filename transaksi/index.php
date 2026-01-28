@@ -2,16 +2,14 @@
 // =======================================================
 // KONEKSI & HEADER
 // =======================================================
-// Nyalakan error reporting untuk debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 include '../config/koneksi.php';
 include '../layout/header.php';
 
-// Validasi koneksi database
 if (!isset($conn)) {
-    die('<div class="alert alert-danger">Koneksi database tidak tersedia. Cek config/koneksi.php</div>');
+    die('<div class="alert alert-danger">Koneksi database tidak tersedia.</div>');
 }
 ?>
 
@@ -53,9 +51,8 @@ if (!isset($conn)) {
                 <tbody>
                     <?php
                     // =======================================================
-                    // QUERY (FULL LOWERCASE)
+                    // QUERY (FULL LOWERCASE + ALIAS)
                     // =======================================================
-                    // Kita pakai 'AS' alias untuk memaksa nama kolom output jadi huruf kecil
                     $query = "
                         SELECT 
                             h.id_stok AS id_stok, 
@@ -77,16 +74,23 @@ if (!isset($conn)) {
                     // CEK ERROR & TAMPILKAN DATA
                     // =======================================================
                     if (!$result) {
-                        // Jika Query Error (Biasanya karena salah nama tabel)
-                        echo "<tr><td colspan='6' class='text-center text-danger fw-bold py-5'>";
-                        echo "<i class='fas fa-exclamation-triangle fa-2x mb-3'></i><br>";
-                        echo "Gagal mengambil data transaksi.<br>";
-                        echo "<small>Error SQL: " . mysqli_error($conn) . "</small>";
-                        echo "</td></tr>";
+                        // FIX: JANGAN PAKAI COLSPAN, TAPI 6 TD TERPISAH BIAR DATATABLES GAK ERROR
+                        echo "<tr>";
+                        echo "<td class='text-center text-danger'>Error</td>";
+                        echo "<td class='text-danger'>Gagal Query: " . mysqli_error($conn) . "</td>";
+                        echo "<td>-</td><td>-</td><td>-</td><td>-</td>";
+                        echo "</tr>";
                     } 
                     elseif (mysqli_num_rows($result) == 0) {
-                        // Jika Data Kosong
-                        echo "<tr><td colspan='6' class='text-center text-muted py-5'>Belum ada transaksi yang tercatat.</td></tr>";
+                        // FIX: JANGAN PAKAI COLSPAN, TAPI 6 TD TERPISAH
+                        echo "<tr>";
+                        echo "<td class='text-center text-muted'>-</td>";
+                        echo "<td class='text-muted text-center'>Belum ada transaksi yang tercatat.</td>";
+                        echo "<td class='text-center text-muted'>-</td>";
+                        echo "<td class='text-center text-muted'>-</td>";
+                        echo "<td class='text-center text-muted'>-</td>";
+                        echo "<td class='text-center text-muted'>-</td>";
+                        echo "</tr>";
                     } 
                     else {
                         // Loop Data
