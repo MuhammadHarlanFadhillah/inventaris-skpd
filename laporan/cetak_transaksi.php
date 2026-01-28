@@ -35,9 +35,6 @@ $tgl_akhir = $_GET['tgl_akhir'];
 
 <body class="p-5" onload="window.print()">
 
-<!-- ==============================
-     JUDUL LAPORAN
-============================== -->
 <div class="text-center mb-4">
     <h4 class="fw-bold text-uppercase">Laporan Riwayat Transaksi Barang</h4>
     <p class="mb-0">
@@ -50,9 +47,6 @@ $tgl_akhir = $_GET['tgl_akhir'];
 
 <hr class="border border-dark border-2 opacity-100 mb-4">
 
-<!-- ==============================
-     TABEL DATA
-============================== -->
 <table class="table table-bordered border-dark table-sm">
     <thead class="table-light border-dark text-center">
         <tr>
@@ -69,21 +63,21 @@ $tgl_akhir = $_GET['tgl_akhir'];
         $no = 1;
 
         // ==============================
-        // QUERY SESUAI STRUKTUR DATABASE
+        // QUERY FIX: LOWERCASE TABLE & COLUMN
         // ==============================
         $query = "
             SELECT 
-                s.TGL_PERIODE,
-                s.ID_STOK,
-                b.NAMA_BARANG,
-                b.SATUAN,
-                d.KUANTITAS_MASUK,
-                d.KUANTITAS_KELUAR
-            FROM DETAIL_STOK d
-            JOIN STOK_PERSEDIAAN s ON d.ID_STOK = s.ID_STOK
-            JOIN BARANG b ON d.ID_BARANG = b.ID_BARANG
-            WHERE s.TGL_PERIODE BETWEEN '$tgl_awal' AND '$tgl_akhir'
-            ORDER BY s.TGL_PERIODE ASC, s.ID_STOK ASC
+                s.tgl_periode,
+                s.id_stok,
+                b.nama_barang,
+                b.satuan,
+                d.kuantitas_masuk,
+                d.kuantitas_keluar
+            FROM detail_stok d
+            JOIN stok_persediaan s ON d.id_stok = s.id_stok
+            JOIN barang b ON d.id_barang = b.id_barang
+            WHERE s.tgl_periode BETWEEN '$tgl_awal' AND '$tgl_akhir'
+            ORDER BY s.tgl_periode ASC, s.id_stok ASC
         ";
 
         $exec = mysqli_query($conn, $query);
@@ -100,21 +94,29 @@ $tgl_akhir = $_GET['tgl_akhir'];
 
             while ($d = mysqli_fetch_assoc($exec)) {
 
-                if ($d['KUANTITAS_MASUK'] > 0) {
+                // Fix: Ambil data pakai key lowercase (dengan backup uppercase)
+                $qty_masuk  = $d['kuantitas_masuk'] ?? $d['KUANTITAS_MASUK'];
+                $qty_keluar = $d['kuantitas_keluar'] ?? $d['KUANTITAS_KELUAR'];
+                $tgl        = $d['tgl_periode'] ?? $d['TGL_PERIODE'];
+                $id_stok    = $d['id_stok'] ?? $d['ID_STOK'];
+                $nama_brg   = $d['nama_barang'] ?? $d['NAMA_BARANG'];
+                $satuan     = $d['satuan'] ?? $d['SATUAN'];
+
+                if ($qty_masuk > 0) {
                     $jenis = 'MASUK';
-                    $qty   = $d['KUANTITAS_MASUK'];
+                    $qty   = $qty_masuk;
                 } else {
                     $jenis = 'KELUAR';
-                    $qty   = $d['KUANTITAS_KELUAR'];
+                    $qty   = $qty_keluar;
                 }
         ?>
         <tr>
             <td class="text-center"><?= $no++; ?></td>
-            <td class="text-center"><?= date('d/m/Y', strtotime($d['TGL_PERIODE'])); ?></td>
-            <td><?= $d['ID_STOK']; ?></td>
-            <td><?= htmlspecialchars($d['NAMA_BARANG']); ?></td>
+            <td class="text-center"><?= date('d/m/Y', strtotime($tgl)); ?></td>
+            <td><?= $id_stok; ?></td>
+            <td><?= htmlspecialchars($nama_brg); ?></td>
             <td class="text-center"><?= $jenis; ?></td>
-            <td class="text-center"><?= $qty . ' ' . $d['SATUAN']; ?></td>
+            <td class="text-center"><?= $qty . ' ' . $satuan; ?></td>
         </tr>
         <?php
             }
@@ -123,9 +125,6 @@ $tgl_akhir = $_GET['tgl_akhir'];
     </tbody>
 </table>
 
-<!-- ==============================
-     TANDA TANGAN
-============================== -->
 <div class="row mt-5">
     <div class="col-4 offset-8 text-center">
         <p>

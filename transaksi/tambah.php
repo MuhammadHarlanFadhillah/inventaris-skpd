@@ -26,18 +26,23 @@ if (isset($_POST['simpan_transaksi'])) {
     // 3. VALIDASI STOK (KHUSUS BARANG KELUAR)
     if ($jenis == 'KELUAR') {
 
+        // PERBAIKAN 1: Tabel & Kolom huruf kecil
         $cek_stok = mysqli_query(
             $conn,
-            "SELECT STOK_AKHIR, NAMA_BARANG 
-             FROM BARANG 
-             WHERE ID_BARANG = '$id_barang'"
+            "SELECT stok_akhir, nama_barang 
+             FROM barang 
+             WHERE id_barang = '$id_barang'"
         );
 
         $data_stok = mysqli_fetch_assoc($cek_stok);
 
-        if ($data_stok['STOK_AKHIR'] < $jumlah) {
+        // Pakai null coalescing (??) buat jaga-jaga key array
+        $stok_db = $data_stok['stok_akhir'] ?? $data_stok['STOK_AKHIR'];
+        $nama_db = $data_stok['nama_barang'] ?? $data_stok['NAMA_BARANG'];
+
+        if ($stok_db < $jumlah) {
             echo "<script>
-                alert('⛔ TRANSAKSI DITOLAK!\\n\\nBarang: {$data_stok['NAMA_BARANG']}\\nSisa Stok: {$data_stok['STOK_AKHIR']}\\nPermintaan: $jumlah');
+                alert('⛔ TRANSAKSI DITOLAK!\\n\\nBarang: {$nama_db}\\nSisa Stok: {$stok_db}\\nPermintaan: $jumlah');
             </script>";
             $error = true;
         }
@@ -46,9 +51,9 @@ if (isset($_POST['simpan_transaksi'])) {
     // 4. PROSES INSERT
     if (!$error) {
 
-        // A. INSERT HEADER
+        // A. INSERT HEADER (PERBAIKAN: Huruf kecil semua)
         $query_header = "
-            INSERT INTO STOK_PERSEDIAAN (ID_STOK, ID_SKPD, TGL_PERIODE, STOK_SISA)
+            INSERT INTO stok_persediaan (id_stok, id_skpd, tgl_periode, stok_sisa)
             VALUES ('$id_stok', '$id_skpd', '$tanggal', '$jumlah')
         ";
 
@@ -60,15 +65,24 @@ if (isset($_POST['simpan_transaksi'])) {
             $q_masuk  = ($jenis == 'MASUK')  ? $jumlah : 0;
             $q_keluar = ($jenis == 'KELUAR') ? $jumlah : 0;
 
-            // B. INSERT DETAIL
+            // B. INSERT DETAIL (PERBAIKAN: Huruf kecil semua)
             $query_detail = "
-                INSERT INTO DETAIL_STOK 
-                    (ID_STOK, ID_BARANG, HARGA_SATUAN, KUANTITAS_MASUK, KUANTITAS_KELUAR)
+                INSERT INTO detail_stok 
+                    (id_stok, id_barang, harga_satuan, kuantitas_masuk, kuantitas_keluar)
                 VALUES 
                     ('$id_stok', '$id_barang', '$harga_fix', '$q_masuk', '$q_keluar')
             ";
 
             if (mysqli_query($conn, $query_detail)) {
+                
+                // C. UPDATE STOK BARANG OTOMATIS (Opsional tapi PENTING)
+                // Biar stok di tabel barang langsung berubah
+                if ($jenis == 'MASUK') {
+                    mysqli_query($conn, "UPDATE barang SET stok_akhir = stok_akhir + $jumlah WHERE id_barang = '$id_barang'");
+                } else {
+                    mysqli_query($conn, "UPDATE barang SET stok_akhir = stok_akhir - $jumlah WHERE id_barang = '$id_barang'");
+                }
+
                 echo "<script>
                     alert('✅ Transaksi berhasil disimpan!\\nStok otomatis diperbarui.');
                     window.location = 'index.php';
@@ -108,17 +122,23 @@ if (isset($_POST['simpan_transaksi'])) {
                         <select name="id_barang" class="form-select form-select-lg bg-light" required>
                             <option value="">-- Cari Barang --</option>
                             <?php
+                            // PERBAIKAN: Select barang huruf kecil
                             $b = mysqli_query(
                                 $conn,
-                                "SELECT ID_BARANG, NAMA_BARANG, SATUAN, STOK_AKHIR 
-                                 FROM BARANG 
-                                 ORDER BY NAMA_BARANG ASC"
+                                "SELECT id_barang, nama_barang, satuan, stok_akhir 
+                                 FROM barang 
+                                 ORDER BY nama_barang ASC"
                             );
 
                             while ($row = mysqli_fetch_assoc($b)) {
-                                echo "<option value='{$row['ID_BARANG']}'>
-                                        {$row['NAMA_BARANG']} 
-                                        (Sisa: {$row['STOK_AKHIR']} {$row['SATUAN']})
+                                // Ambil data aman (lowercase/uppercase backup)
+                                $id   = $row['id_barang'] ?? $row['ID_BARANG'];
+                                $nama = $row['nama_barang'] ?? $row['NAMA_BARANG'];
+                                $sat  = $row['satuan'] ?? $row['SATUAN'];
+                                $stok = $row['stok_akhir'] ?? $row['STOK_AKHIR'];
+
+                                echo "<option value='{$id}'>
+                                        {$nama} (Sisa: {$stok} {$sat})
                                       </option>";
                             }
                             ?>
@@ -200,4 +220,4 @@ function formatRupiah(angka) {
 }
 </script>
 
-<?php include '../layout/footer.php'; ?>
+<?php include '../layout/footer.php'; ?>s

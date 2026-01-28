@@ -18,7 +18,6 @@ if (!isset($conn)) {
         <p class="text-muted mb-0">Daftar transaksi barang masuk dan keluar.</p>
     </div>
 
-    <!-- TOOLBAR -->
     <div class="btn-toolbar gap-2">
         <a href="tambah.php" class="btn btn-primary shadow-sm rounded-pill px-4">
             <i class="fas fa-plus-circle me-2"></i>Transaksi Baru
@@ -51,27 +50,27 @@ if (!isset($conn)) {
                 <tbody>
                     <?php
                     // =======================================================
-                    // QUERY TRANSAKSI
+                    // QUERY TRANSAKSI (FIXED: Lowercase Tables & Columns)
                     // =======================================================
                     $query = "
                         SELECT 
-                            h.ID_STOK,
-                            h.TGL_PERIODE,
-                            b.ID_BARANG,
-                            b.NAMA_BARANG,
-                            d.KUANTITAS_MASUK,
-                            d.KUANTITAS_KELUAR,
-                            d.HARGA_SATUAN
-                        FROM STOK_PERSEDIAAN h
-                        JOIN DETAIL_STOK d ON h.ID_STOK = d.ID_STOK
-                        JOIN BARANG b ON d.ID_BARANG = b.ID_BARANG
-                        ORDER BY h.TGL_PERIODE DESC, h.ID_STOK DESC
+                            h.id_stok,
+                            h.tgl_periode,
+                            b.id_barang,
+                            b.nama_barang,
+                            d.kuantitas_masuk,
+                            d.kuantitas_keluar,
+                            d.harga_satuan
+                        FROM stok_persediaan h
+                        JOIN detail_stok d ON h.id_stok = d.id_stok
+                        JOIN barang b ON d.id_barang = b.id_barang
+                        ORDER BY h.tgl_periode DESC, h.id_stok DESC
                     ";
 
                     $result = mysqli_query($conn, $query);
 
                     // =======================================================
-                    // JIKA DATA KOSONG (6 TD - AMAN DATATABLES)
+                    // JIKA DATA KOSONG
                     // =======================================================
                     if (!$result || mysqli_num_rows($result) == 0) {
                         echo "
@@ -88,13 +87,22 @@ if (!isset($conn)) {
 
                         while ($row = mysqli_fetch_assoc($result)) {
 
-                            if ($row['KUANTITAS_MASUK'] > 0) {
+                            // FIX: Access array keys using lowercase or fallback to uppercase
+                            $qty_masuk  = $row['kuantitas_masuk'] ?? $row['KUANTITAS_MASUK'];
+                            $qty_keluar = $row['kuantitas_keluar'] ?? $row['KUANTITAS_KELUAR'];
+                            $tgl        = $row['tgl_periode'] ?? $row['TGL_PERIODE'];
+                            $nama_brg   = $row['nama_barang'] ?? $row['NAMA_BARANG'];
+                            $id_brg     = $row['id_barang'] ?? $row['ID_BARANG'];
+                            $harga      = $row['harga_satuan'] ?? $row['HARGA_SATUAN'];
+                            $id_stok    = $row['id_stok'] ?? $row['ID_STOK'];
+
+                            if ($qty_masuk > 0) {
                                 $jenis = "
                                     <span class='badge bg-success bg-opacity-10 text-success px-3 rounded-pill'>
                                         <i class='fas fa-arrow-down me-1'></i>Masuk
                                     </span>
                                 ";
-                                $qty = $row['KUANTITAS_MASUK'];
+                                $qty = $qty_masuk;
                                 $warna_qty = "text-success";
                             } else {
                                 $jenis = "
@@ -102,29 +110,29 @@ if (!isset($conn)) {
                                         <i class='fas fa-arrow-up me-1'></i>Keluar
                                     </span>
                                 ";
-                                $qty = $row['KUANTITAS_KELUAR'];
+                                $qty = $qty_keluar;
                                 $warna_qty = "text-danger";
                             }
                     ?>
                             <tr>
                                 <td class="ps-4 text-muted">
-                                    <?= date('d M Y', strtotime($row['TGL_PERIODE'])); ?>
+                                    <?= date('d M Y', strtotime($tgl)); ?>
                                 </td>
                                 <td>
                                     <span class="fw-bold text-dark">
-                                        <?= htmlspecialchars($row['NAMA_BARANG']); ?>
+                                        <?= htmlspecialchars($nama_brg); ?>
                                     </span><br>
                                     <small class="text-muted">
-                                        Kode: <?= htmlspecialchars($row['ID_BARANG']); ?>
+                                        Kode: <?= htmlspecialchars($id_brg); ?>
                                     </small>
                                 </td>
                                 <td class="text-center"><?= $jenis; ?></td>
                                 <td class="text-center fw-bold <?= $warna_qty; ?>"><?= $qty; ?></td>
                                 <td class="text-end fw-bold text-secondary">
-                                    Rp <?= number_format($row['HARGA_SATUAN'], 0, ',', '.'); ?>
+                                    Rp <?= number_format($harga, 0, ',', '.'); ?>
                                 </td>
                                 <td class="text-center pe-4">
-                                    <a href="hapus.php?id=<?= $row['ID_STOK']; ?>"
+                                    <a href="hapus.php?id=<?= $id_stok; ?>"
                                        class="btn btn-sm btn-outline-danger"
                                        onclick="return confirm('Yakin hapus transaksi ini?\nStok akan otomatis dikembalikan!')">
                                         <i class="fas fa-trash"></i>

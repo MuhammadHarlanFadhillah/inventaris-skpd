@@ -11,14 +11,21 @@ if (!isset($conn)) {
 mysqli_begin_transaction($conn);
 
 try {
-    // 1. Hapus detail dulu (FK aman)
-    mysqli_query($conn, "DELETE FROM DETAIL_STOK");
+    // 1. Hapus detail dulu (FK aman) 
+    // PERBAIKAN: Ganti 'DETAIL_STOK' jadi 'detail_stok' (huruf kecil)
+    if (!mysqli_query($conn, "DELETE FROM detail_stok")) {
+        throw new Exception(mysqli_error($conn));
+    }
 
     // 2. Hapus header
-    mysqli_query($conn, "DELETE FROM STOK_PERSEDIAAN");
+    // PERBAIKAN: Ganti 'STOK_PERSEDIAAN' jadi 'stok_persediaan' (huruf kecil)
+    if (!mysqli_query($conn, "DELETE FROM stok_persediaan")) {
+        throw new Exception(mysqli_error($conn));
+    }
 
-    // 3. (OPSIONAL) Reset stok barang jika ada kolom stok
-    // mysqli_query($conn, "UPDATE BARANG SET STOK = 0");
+    // 3. (OPSIONAL) Reset stok barang
+    // Kalau mau diaktifkan, pastikan nama tabel 'barang' huruf kecil juga
+    // mysqli_query($conn, "UPDATE barang SET stok_akhir = 0");
 
     mysqli_commit($conn);
 
@@ -28,6 +35,8 @@ try {
 
 } catch (Exception $e) {
     mysqli_rollback($conn);
-    header("Location: index.php?msg=hapus_semua_gagal");
+    // Gw tambahin error message biar ketahuan kalau gagal kenapa
+    header("Location: index.php?msg=hapus_semua_gagal&error=" . urlencode($e->getMessage()));
     exit;
 }
+?>

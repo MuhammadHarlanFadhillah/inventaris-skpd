@@ -14,10 +14,8 @@ if (!isset($conn)) {
     <meta charset="UTF-8">
     <title>Laporan Stok Barang</title>
 
-    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Font Awesome (ikon print) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
     <style>
@@ -44,13 +42,10 @@ if (!isset($conn)) {
 
 <body class="bg-white text-dark p-5">
 
-<!-- ==============================
-     KOP SURAT
-============================== -->
 <div class="row align-items-center mb-3">
     <div class="col-2 text-center">
         <img src="../assets/img/gudang.png"
-             width="90" alt="Logo Gudang">
+             width="90" alt="Logo Gudang" onerror="this.style.display='none'">
     </div>
     <div class="col-8 text-center">
         <h5 class="mb-0 fw-bold">PEMERINTAH KOTA BANDUNG</h5>
@@ -64,9 +59,6 @@ if (!isset($conn)) {
 <div class="garis-kop"></div>
 <div class="garis-kop-2"></div>
 
-<!-- ==============================
-     JUDUL LAPORAN
-============================== -->
 <div class="text-center mb-4">
     <h5 class="fw-bold text-uppercase text-decoration-underline">
         Laporan Data Stok Barang
@@ -76,9 +68,6 @@ if (!isset($conn)) {
     </p>
 </div>
 
-<!-- ==============================
-     TABEL DATA
-============================== -->
 <table class="table table-bordered border-dark table-sm">
     <thead class="table-light text-center border-dark">
         <tr>
@@ -92,15 +81,16 @@ if (!isset($conn)) {
     <tbody>
         <?php
         $no = 1;
+        // PERBAIKAN: Query pakai huruf kecil semua
         $query = mysqli_query($conn, "
             SELECT 
-                ID_BARANG,
-                NAMA_BARANG,
-                SPESIFIKASI,
-                STOK_AKHIR,
-                SATUAN
-            FROM BARANG
-            ORDER BY NAMA_BARANG ASC
+                id_barang,
+                nama_barang,
+                spesifikasi,
+                stok_akhir,
+                satuan
+            FROM barang
+            ORDER BY nama_barang ASC
         ");
 
         if (!$query || mysqli_num_rows($query) == 0) {
@@ -113,14 +103,20 @@ if (!isset($conn)) {
             ";
         } else {
             while ($row = mysqli_fetch_assoc($query)) {
+                // PERBAIKAN: Ambil data pakai key huruf kecil (dengan backup huruf besar)
+                $id   = $row['id_barang'] ?? $row['ID_BARANG'];
+                $nama = $row['nama_barang'] ?? $row['NAMA_BARANG'];
+                $spek = $row['spesifikasi'] ?? $row['SPESIFIKASI'];
+                $stok = $row['stok_akhir'] ?? $row['STOK_AKHIR'];
+                $sat  = $row['satuan'] ?? $row['SATUAN'];
         ?>
         <tr>
             <td class="text-center"><?= $no++; ?></td>
-            <td class="text-center"><?= htmlspecialchars($row['ID_BARANG']); ?></td>
-            <td><?= htmlspecialchars($row['NAMA_BARANG']); ?></td>
-            <td><?= htmlspecialchars($row['SPESIFIKASI']); ?></td>
+            <td class="text-center"><?= htmlspecialchars($id); ?></td>
+            <td><?= htmlspecialchars($nama); ?></td>
+            <td><?= htmlspecialchars($spek); ?></td>
             <td class="text-center fw-bold">
-                <?= $row['STOK_AKHIR']; ?> <?= htmlspecialchars($row['SATUAN']); ?>
+                <?= $stok; ?> <?= htmlspecialchars($sat); ?>
             </td>
         </tr>
         <?php
@@ -130,9 +126,6 @@ if (!isset($conn)) {
     </tbody>
 </table>
 
-<!-- ==============================
-     TANDA TANGAN
-============================== -->
 <div class="row mt-5">
     <div class="col-4 offset-8 text-center">
         <p class="mb-5">
@@ -151,9 +144,6 @@ if (!isset($conn)) {
     </div>
 </div>
 
-<!-- ==============================
-     TOMBOL CETAK
-============================== -->
 <div class="fixed-bottom p-3 bg-light border-top no-print text-center">
     <button onclick="window.print()"
             class="btn btn-primary btn-lg rounded-pill px-5 shadow">

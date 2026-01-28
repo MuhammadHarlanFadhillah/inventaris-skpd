@@ -13,24 +13,35 @@ if (!isset($_GET['id'])) {
     exit;
 }
 
-$id_stok = $_GET['id'];
+$id_stok = mysqli_real_escape_string($conn, $_GET['id']);
 
 // Gunakan transaksi agar aman
 mysqli_begin_transaction($conn);
 
 try {
-    // 1. Ambil detail transaksi (untuk rollback stok jika perlu)
+    // 1. Ambil detail transaksi (untuk rollback stok jika perlu nanti)
+    // PERBAIKAN: Tabel & Kolom huruf kecil
     $detail = mysqli_query($conn, "
-        SELECT ID_BARANG, KUANTITAS_MASUK, KUANTITAS_KELUAR
-        FROM DETAIL_STOK
-        WHERE ID_STOK = '$id_stok'
+        SELECT id_barang, kuantitas_masuk, kuantitas_keluar
+        FROM detail_stok
+        WHERE id_stok = '$id_stok'
     ");
 
+    if (!$detail) {
+        throw new Exception("Gagal ambil detail: " . mysqli_error($conn));
+    }
+
     // 2. Hapus detail
-    mysqli_query($conn, "DELETE FROM DETAIL_STOK WHERE ID_STOK = '$id_stok'");
+    // PERBAIKAN: Tabel 'detail_stok' & Kolom 'id_stok' huruf kecil
+    if (!mysqli_query($conn, "DELETE FROM detail_stok WHERE id_stok = '$id_stok'")) {
+        throw new Exception("Gagal hapus detail: " . mysqli_error($conn));
+    }
 
     // 3. Hapus header
-    mysqli_query($conn, "DELETE FROM STOK_PERSEDIAAN WHERE ID_STOK = '$id_stok'");
+    // PERBAIKAN: Tabel 'stok_persediaan' & Kolom 'id_stok' huruf kecil
+    if (!mysqli_query($conn, "DELETE FROM stok_persediaan WHERE id_stok = '$id_stok'")) {
+        throw new Exception("Gagal hapus header: " . mysqli_error($conn));
+    }
 
     mysqli_commit($conn);
 
@@ -40,6 +51,8 @@ try {
 
 } catch (Exception $e) {
     mysqli_rollback($conn);
-    header("Location: index.php?msg=hapus_gagal");
+    // Tambahin pesan error biar tau kenapa gagal
+    header("Location: index.php?msg=hapus_gagal&error=" . urlencode($e->getMessage()));
     exit;
 }
+?>

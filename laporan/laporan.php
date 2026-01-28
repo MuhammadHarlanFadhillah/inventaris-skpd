@@ -9,17 +9,15 @@ include '../layout/header.php';
 <style>
     .hover-top {
         transition: all 0.3s ease;
-        cursor: default;
+        cursor: pointer;
     }
     .hover-top:hover {
         transform: translateY(-5px);
         box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+        border-color: #0d6efd !important;
     }
 </style>
 
-<!-- ==============================
-     JUDUL HALAMAN
-============================== -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-3 mb-4 border-bottom">
     <div>
         <h1 class="h2 text-primary fw-bold">
@@ -33,9 +31,6 @@ include '../layout/header.php';
 
 <div class="row">
 
-    <!-- ==============================
-         LAPORAN STOK
-    ============================== -->
     <div class="col-md-6 mb-4">
         <div class="card h-100 border-0 shadow-sm rounded-4 hover-top">
             <div class="card-body text-center p-4">
@@ -50,7 +45,7 @@ include '../layout/header.php';
 
                 <hr class="w-25 mx-auto my-4">
 
-                <a href="cetak_stok.php"
+                <a href="cetak_stok.php" 
                    target="_blank"
                    class="btn btn-primary rounded-pill px-5 shadow-sm w-75">
                     <i class="fas fa-file-pdf me-2"></i>Preview & Cetak
@@ -59,9 +54,6 @@ include '../layout/header.php';
         </div>
     </div>
 
-    <!-- ==============================
-         LAPORAN PERIODE
-    ============================== -->
     <div class="col-md-6 mb-4">
         <div class="card h-100 border-0 shadow-sm rounded-4 hover-top">
             <div class="card-body p-4">
@@ -85,9 +77,9 @@ include '../layout/header.php';
                             <label class="form-label fw-bold small">
                                 Dari Tanggal
                             </label>
-                            <input type="date"
-                                   name="tgl_awal"
-                                   class="form-control"
+                            <input type="date" 
+                                   name="tgl_awal" 
+                                   class="form-control" 
                                    required>
                         </div>
 
@@ -95,16 +87,16 @@ include '../layout/header.php';
                             <label class="form-label fw-bold small">
                                 Sampai Tanggal
                             </label>
-                            <input type="date"
-                                   name="tgl_akhir"
-                                   class="form-control"
-                                   value="<?= date('Y-m-d'); ?>"
+                            <input type="date" 
+                                   name="tgl_akhir" 
+                                   class="form-control" 
+                                   value="<?= date('Y-m-d'); ?>" 
                                    required>
                         </div>
                     </div>
 
                     <div class="text-center">
-                        <button type="submit"
+                        <button type="submit" 
                                 class="btn btn-success rounded-pill px-4 shadow-sm w-100">
                             <i class="fas fa-print me-2"></i>Cetak Laporan
                         </button>
