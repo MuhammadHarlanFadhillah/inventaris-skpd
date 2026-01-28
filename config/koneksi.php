@@ -1,7 +1,10 @@
 <?php
 date_default_timezone_set('Asia/Jakarta');
 
-$base_url = "https://inventaris-skpd-production.up.railway.app/"; // Ganti domain railway lu
+// Auto-detect domain (bisa Railway atau custom domain)
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'];
+$base_url = $protocol . "://" . $host . "/";
 
 // PAKE GETENV (Lebih aman buat Server)
 $host = getenv('MYSQLHOST');
