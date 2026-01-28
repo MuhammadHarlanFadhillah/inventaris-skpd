@@ -1,14 +1,14 @@
 <?php 
-ob_start(); 
+ob_start(); // Anti Blank
 include '../config/koneksi.php';
 
-// --- BAGIAN INI AKAN MEMBERSIHKAN DATABASE LU DARI ERROR TRIGGER ---
-// Kita hapus trigger bawaan Windows yg bikin error di Railway
+// --- OBAT ERROR 500: HAPUS TRIGGER BAWAAN ---
+// Kita hapus trigger lama yg mungkin maksa pake huruf besar
 mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_masuk");
 mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_keluar");
 mysqli_query($conn, "DROP TRIGGER IF EXISTS barang_masuk");
 mysqli_query($conn, "DROP TRIGGER IF EXISTS barang_keluar");
-// -------------------------------------------------------------------
+// --------------------------------------------
 
 if (isset($_POST['simpan'])) {
     $id_brg = $_POST['id_barang'];
@@ -22,8 +22,9 @@ if (isset($_POST['simpan'])) {
 
     // 1. INSERT HEADER
     $q1 = "INSERT INTO stok_persediaan (id_stok, id_skpd, tgl_periode) VALUES ('$id_stok', '$id_skpd', '$tgl')";
+    // Cek error header
     if (!mysqli_query($conn, $q1)) {
-        die("<h3>Gagal Header: " . mysqli_error($conn) . "</h3>");
+        die("<h3>Gagal Simpan Header: " . mysqli_error($conn) . "</h3>");
     }
 
     // 2. INSERT DETAIL
@@ -33,12 +34,14 @@ if (isset($_POST['simpan'])) {
     $q2 = "INSERT INTO detail_stok (id_stok, id_barang, harga_satuan, kuantitas_masuk, kuantitas_keluar) 
            VALUES ('$id_stok', '$id_brg', '$harga', '$qin', '$qout')";
     
+    // Cek error detail
     if (!mysqli_query($conn, $q2)) {
-        mysqli_query($conn, "DELETE FROM stok_persediaan WHERE id_stok='$id_stok'"); // Rollback
-        die("<h3>Gagal Detail: " . mysqli_error($conn) . "</h3>");
+        mysqli_query($conn, "DELETE FROM stok_persediaan WHERE id_stok='$id_stok'"); // Batalkan header
+        die("<h3>Gagal Simpan Detail: " . mysqli_error($conn) . "</h3>");
     }
 
-    // 3. UPDATE STOK (Manual lewat PHP, karena Trigger udah dihapus)
+    // 3. UPDATE STOK (PHP MENGAMBIL ALIH TUGAS TRIGGER)
+    // Karena trigger udah kita hapus, kita update stok manual pake PHP (Huruf Kecil Aman)
     if ($jenis == 'MASUK') {
         mysqli_query($conn, "UPDATE barang SET stok_akhir = stok_akhir + $jml WHERE id_barang = '$id_brg'");
     } else {
@@ -65,7 +68,7 @@ if (isset($_POST['simpan'])) {
                             <?php
                             $q = mysqli_query($conn, "SELECT * FROM barang ORDER BY nama_barang ASC");
                             while ($r = mysqli_fetch_assoc($q)) {
-                                // Paksa ambil data (huruf besar/kecil)
+                                // Paksa ambil data (huruf besar/kecil aman)
                                 $id = $r['id_barang'] ?? $r['ID_BARANG'];
                                 $nm = $r['nama_barang'] ?? $r['NAMA_BARANG'];
                                 $st = $r['stok_akhir'] ?? $r['STOK_AKHIR'];

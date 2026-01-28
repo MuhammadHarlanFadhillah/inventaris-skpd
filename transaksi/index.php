@@ -1,5 +1,4 @@
 <?php
-// FILE: transaksi/index.php
 include '../config/koneksi.php';
 include '../layout/header.php';
 ?>
@@ -30,7 +29,7 @@ include '../layout/header.php';
                 </thead>
                 <tbody>
                     <?php
-                    // QUERY (Alias Huruf Kecil biar aman)
+                    // QUERY (Alias Huruf Kecil biar aman terbaca)
                     $q = "SELECT 
                             h.id_stok AS id_stok, h.tgl_periode AS tgl_periode,
                             b.nama_barang AS nama_barang, b.id_barang AS id_barang,
@@ -42,7 +41,7 @@ include '../layout/header.php';
                     
                     $res = mysqli_query($conn, $q);
 
-                    if (mysqli_num_rows($res) > 0) {
+                    if ($res && mysqli_num_rows($res) > 0) {
                         while ($row = mysqli_fetch_assoc($res)) {
                             // Logic Jenis
                             if ($row['q_in'] > 0) {
@@ -71,8 +70,8 @@ include '../layout/header.php';
                     <?php 
                         }
                     } else { 
-                        // KOSONG: Tampilkan 6 kolom kosong (JANGAN PAKE COLSPAN)
-                        // DataTables error kalau jumlah td beda sama th
+                        // SOLUSI POPUP ERROR:
+                        // Jangan pakai colspan="6", tapi buat 6 td manual.
                     ?>
                     <tr>
                         <td class="text-center">-</td>
