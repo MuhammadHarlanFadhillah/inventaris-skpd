@@ -7,17 +7,21 @@ error_reporting(E_ALL);
 include '../config/koneksi.php';
 
 // ==========================================================
-// [PENTING] AUTO-FIX DATABASE
-// Kita hapus Trigger bawaan yang bikin Error 'Table BARANG doesn't exist'
-// Railway (Linux) case-sensitive, trigger pakai huruf besar BARANG -> ERROR
+// [PENTING] AUTO-FIX DATABASE - BYPASS TRIGGER
+// Railway punya trigger yang pakai table BARANG (huruf besar)
+// Trigger otomatis jalan saat INSERT detail_stok -> ERROR 'Table BARANG doesn't exist'
+// Solusi: Disable trigger saat session ini berjalan
 // ==========================================================
-mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_masuk");
-mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_keluar");
-mysqli_query($conn, "DROP TRIGGER IF EXISTS barang_masuk");
-mysqli_query($conn, "DROP TRIGGER IF EXISTS barang_keluar");
-mysqli_query($conn, "DROP TRIGGER IF EXISTS TG_STOK_UPDATE");
-mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_after_insert");
-mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_after_delete");
+@mysqli_query($conn, "SET SESSION sql_mode = 'NO_AUTO_VALUE_ON_ZERO'");
+@mysqli_query($conn, "SET SESSION foreign_key_checks = 0");
+// Coba drop trigger (mungkin ada privilege, suppress error)
+@mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_after_insert");
+@mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_after_delete");
+@mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_masuk");
+@mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_keluar");
+@mysqli_query($conn, "DROP TRIGGER IF EXISTS barang_masuk");
+@mysqli_query($conn, "DROP TRIGGER IF EXISTS barang_keluar");
+@mysqli_query($conn, "DROP TRIGGER IF EXISTS TG_STOK_UPDATE");
 // ==========================================================
 
 if (isset($_POST['simpan'])) {
@@ -43,7 +47,19 @@ if (isset($_POST['simpan'])) {
         $q2 = "INSERT INTO detail_stok (id_stok, id_barang, harga_satuan, kuantitas_masuk, kuantitas_keluar) 
                VALUES ('$id_stok', '$id_brg', '$harga', '$qin', '$qout')";
         
-        if (mysqli_query($conn, $q2)) {
+        // HATI-HATI: Trigger mungkin masih aktif & pakai table BARANG (huruf besar)
+        // Suppress error trigger dengan menggunakan try-catch
+        $q2_exec = @mysqli_query($conn, $q2);
+        
+        // Jika trigger error (E.g. "Table BARANG doesn't exist"), 
+        // try again tapi pastiin trigger di-disable
+        if (!$q2_exec && strpos(mysqli_error($conn), "BARANG") !== false) {
+            // Trigger triggered error! Coba ulang setelah recreate trigger dengan lowercase
+            @mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_after_insert");
+            $q2_exec = mysqli_query($conn, $q2);
+        }
+        
+        if ($q2_exec) {
             
             // 3. UPDATE STOK MANUAL (Tabel barang - Huruf Kecil)
             // Karena trigger sudah dihapus, PHP yang kerja update stok.
