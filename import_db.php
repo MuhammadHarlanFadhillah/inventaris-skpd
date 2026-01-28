@@ -1,4 +1,8 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 $conn = mysqli_connect(
     getenv("MYSQLHOST"),
     getenv("MYSQLUSER"),
@@ -11,10 +15,16 @@ if (!$conn) {
     die("Koneksi gagal: " . mysqli_connect_error());
 }
 
-$sql = file_get_contents(__DIR__ . "/DATABASE/db_inventaris.sql");
+$sqlPath = __DIR__ . "/DATABASE/db_inventaris.sql";
+
+if (!file_exists($sqlPath)) {
+    die("FILE SQL TIDAK DITEMUKAN: " . $sqlPath);
+}
+
+$sql = file_get_contents($sqlPath);
 
 if (!$sql) {
-    die("File SQL tidak terbaca");
+    die("FILE SQL TIDAK BISA DIBACA");
 }
 
 $queries = explode(";", $sql);
