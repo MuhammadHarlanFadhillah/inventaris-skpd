@@ -12,10 +12,10 @@ if (!isset($_GET['id'])) {
 
 $id_barang = trim($_GET['id']);
 
-// Ambil data barang
+// PERBAIKAN 1: Query Select pakai huruf kecil (barang, id_barang)
 $query_ambil = mysqli_query(
     $conn,
-    "SELECT * FROM BARANG WHERE ID_BARANG = '$id_barang'"
+    "SELECT * FROM barang WHERE id_barang = '$id_barang'"
 );
 
 $data = mysqli_fetch_assoc($query_ambil);
@@ -37,12 +37,13 @@ if (isset($_POST['update'])) {
     $satuan = trim(htmlspecialchars($_POST['satuan']));
     $spek   = trim(htmlspecialchars($_POST['spek']));
 
+    // PERBAIKAN 2: Query Update pakai huruf kecil semua
     $query_update = "
-        UPDATE BARANG SET
-            NAMA_BARANG = '$nama',
-            SATUAN      = '$satuan',
-            SPESIFIKASI = '$spek'
-        WHERE ID_BARANG = '$id_barang'
+        UPDATE barang SET
+            nama_barang = '$nama',
+            satuan      = '$satuan',
+            spesifikasi = '$spek'
+        WHERE id_barang = '$id_barang'
     ";
 
     if (mysqli_query($conn, $query_update)) {
@@ -74,7 +75,7 @@ if (isset($_POST['update'])) {
                     <div class="mb-3">
                         <label class="form-label fw-bold">ID Barang</label>
                         <input type="text"
-                               value="<?= htmlspecialchars($data['ID_BARANG']); ?>"
+                               value="<?= htmlspecialchars($data['id_barang'] ?? $data['ID_BARANG']); ?>"
                                class="form-control bg-light fw-bold text-muted"
                                readonly>
                     </div>
@@ -82,7 +83,7 @@ if (isset($_POST['update'])) {
                     <div class="mb-3">
                         <label class="form-label fw-bold">Nama Barang</label>
                         <input type="text" name="nama" class="form-control"
-                               value="<?= htmlspecialchars($data['NAMA_BARANG']); ?>"
+                               value="<?= htmlspecialchars($data['nama_barang'] ?? $data['NAMA_BARANG']); ?>"
                                required>
                     </div>
 
@@ -90,13 +91,13 @@ if (isset($_POST['update'])) {
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Satuan</label>
                             <input type="text" name="satuan" class="form-control"
-                                   value="<?= htmlspecialchars($data['SATUAN']); ?>">
+                                   value="<?= htmlspecialchars($data['satuan'] ?? $data['SATUAN']); ?>">
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Spesifikasi</label>
                             <input type="text" name="spek" class="form-control"
-                                   value="<?= htmlspecialchars($data['SPESIFIKASI']); ?>">
+                                   value="<?= htmlspecialchars($data['spesifikasi'] ?? $data['SPESIFIKASI']); ?>">
                         </div>
                     </div>
 

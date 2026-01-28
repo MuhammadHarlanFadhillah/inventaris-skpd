@@ -35,36 +35,46 @@ include '../layout/header.php';
                     </thead>
                     <tbody>
                         <?php
-                        // PERBAIKAN 1: 'ORDER BY id_barang' (huruf kecil)
-                        $sql = "SELECT * FROM barang ORDER BY id_barang DESC";
+                        // Query Table tetap huruf kecil (karena nama tabel di Linux sensitive)
+                        $sql = "SELECT * FROM barang ORDER BY ID_BARANG DESC"; 
+                        // Note: Kalau error order by, ganti ID_BARANG jadi id_barang. Tapi biasanya kolom aman.
+                        
                         $query = mysqli_query($conn, $sql);
 
                         if ($query && mysqli_num_rows($query) > 0) {
                             while ($data = mysqli_fetch_assoc($query)) {
+                                // --- JURUS ANTI GAGAL ---
+                                // Ambil data pakai logika "ATAU" (??). 
+                                // Kalau kecil kosong, ambil besar.
+                                $id          = $data['id_barang'] ?? $data['ID_BARANG'];
+                                $nama_barang = $data['nama_barang'] ?? $data['NAMA_BARANG'];
+                                $satuan      = $data['satuan'] ?? $data['SATUAN'];
+                                $spesifikasi = $data['spesifikasi'] ?? $data['SPESIFIKASI'];
+                                $stok        = $data['stok_akhir'] ?? $data['STOK_AKHIR'];
                         ?>
                         <tr>
                             <td class="px-4 py-3 text-muted">
-                                #<?= htmlspecialchars($data['id_barang']); ?>
+                                #<?= htmlspecialchars($id); ?>
                             </td>
 
                             <td class="px-4 py-3 fw-bold text-dark">
-                                <?= htmlspecialchars($data['nama_barang']); ?>
+                                <?= htmlspecialchars($nama_barang); ?>
                             </td>
 
                             <td class="px-4 py-3">
                                 <span class="badge bg-info bg-opacity-10 text-info border border-info rounded-pill px-3">
-                                    <?= htmlspecialchars($data['satuan']); ?>
+                                    <?= htmlspecialchars($satuan); ?>
                                 </span>
                             </td>
 
                             <td class="px-4 py-3 small text-muted">
-                                <?= htmlspecialchars($data['spesifikasi']); ?>
+                                <?= htmlspecialchars($spesifikasi); ?>
                             </td>
 
                             <td class="px-4 py-3 text-center">
-                                <?php if ($data['stok_akhir'] > 0): ?>
+                                <?php if ($stok > 0): ?>
                                     <span class="fw-bold text-success">
-                                        <?= $data['stok_akhir']; ?>
+                                        <?= $stok; ?>
                                     </span>
                                 <?php else: ?>
                                     <span class="badge bg-danger">Habis</span>
@@ -73,11 +83,11 @@ include '../layout/header.php';
 
                             <td class="px-4 py-3 text-center">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="edit.php?id=<?= $data['id_barang']; ?>" 
+                                    <a href="edit.php?id=<?= $id; ?>" 
                                        class="btn btn-outline-warning">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="hapus.php?id=<?= $data['id_barang']; ?>" 
+                                    <a href="hapus.php?id=<?= $id; ?>" 
                                        class="btn btn-outline-danger"
                                        onclick="return confirm('Yakin ingin menghapus data ini?')">
                                         <i class="fas fa-trash"></i>

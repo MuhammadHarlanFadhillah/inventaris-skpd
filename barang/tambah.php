@@ -12,32 +12,38 @@ if (isset($_POST['simpan'])) {
     $satuan = trim(htmlspecialchars($_POST['satuan']));
     $spek   = trim(htmlspecialchars($_POST['spek']));
 
-    // CEK DUPLIKAT ID BARANG
-    $cek = mysqli_query($conn, "SELECT ID_BARANG FROM BARANG WHERE ID_BARANG = '$id'");
+    // PERBAIKAN 1: Query Cek Duplikat pake huruf kecil (barang)
+    // Pastikan kolom di database namanya 'id_barang' (sesuai index.php tadi)
+    $cek = mysqli_query($conn, "SELECT id_barang FROM barang WHERE id_barang = '$id'");
+    
+    // Cek error query (buat debugging)
+    if(!$cek) {
+        die("Error Cek ID: " . mysqli_error($conn));
+    }
+
     if (mysqli_num_rows($cek) > 0) {
 
         echo "<script>alert('❌ Gagal! ID Barang sudah digunakan.');</script>";
 
     } else {
 
-        // PANGGIL STORED PROCEDURE
-        $sql  = "CALL tambah_barang('$id', '$nama', '$satuan', '$spek')";
+        // PERBAIKAN 2: Ganti Stored Procedure jadi INSERT MANUAL
+        // Alasannya: Biar aman kalau stored procedure lu di database isinya masih huruf besar (INSERT INTO BARANG).
+        // Kita paksa insert ke tabel 'barang' (kecil) dari sini.
+        // Kita set stok_akhir jadi 0 (karena barang baru)
+        
+        $sql  = "INSERT INTO barang (id_barang, nama_barang, satuan, spesifikasi, stok_akhir) 
+                 VALUES ('$id', '$nama', '$satuan', '$spek', 0)";
+        
         $exec = mysqli_query($conn, $sql);
 
         if ($exec) {
-
-            // WAJIB: bersihkan result set setelah CALL
-            while (mysqli_more_results($conn)) {
-                mysqli_next_result($conn);
-            }
-
             echo "<script>
                 alert('✅ Data barang berhasil ditambahkan!');
                 window.location = 'index.php';
             </script>";
 
         } else {
-
             echo "<div class='alert alert-danger mt-3'>
                     <strong>Error:</strong> " . mysqli_error($conn) . "
                   </div>";
