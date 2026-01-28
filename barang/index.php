@@ -35,7 +35,8 @@ include '../layout/header.php';
                     </thead>
                     <tbody>
                         <?php
-                        $sql = "SELECT * FROM BARANG ORDER BY ID_BARANG DESC";
+                        // PERBAIKAN 1: 'ORDER BY id_barang' (huruf kecil)
+                        $sql = "SELECT * FROM barang ORDER BY id_barang DESC";
                         $query = mysqli_query($conn, $sql);
 
                         if ($query && mysqli_num_rows($query) > 0) {
@@ -43,27 +44,27 @@ include '../layout/header.php';
                         ?>
                         <tr>
                             <td class="px-4 py-3 text-muted">
-                                #<?= htmlspecialchars($data['ID_BARANG']); ?>
+                                #<?= htmlspecialchars($data['id_barang']); ?>
                             </td>
 
                             <td class="px-4 py-3 fw-bold text-dark">
-                                <?= htmlspecialchars($data['NAMA_BARANG']); ?>
+                                <?= htmlspecialchars($data['nama_barang']); ?>
                             </td>
 
                             <td class="px-4 py-3">
                                 <span class="badge bg-info bg-opacity-10 text-info border border-info rounded-pill px-3">
-                                    <?= htmlspecialchars($data['SATUAN']); ?>
+                                    <?= htmlspecialchars($data['satuan']); ?>
                                 </span>
                             </td>
 
                             <td class="px-4 py-3 small text-muted">
-                                <?= htmlspecialchars($data['SPESIFIKASI']); ?>
+                                <?= htmlspecialchars($data['spesifikasi']); ?>
                             </td>
 
                             <td class="px-4 py-3 text-center">
-                                <?php if ($data['STOK_AKHIR'] > 0): ?>
+                                <?php if ($data['stok_akhir'] > 0): ?>
                                     <span class="fw-bold text-success">
-                                        <?= $data['STOK_AKHIR']; ?>
+                                        <?= $data['stok_akhir']; ?>
                                     </span>
                                 <?php else: ?>
                                     <span class="badge bg-danger">Habis</span>
@@ -72,11 +73,11 @@ include '../layout/header.php';
 
                             <td class="px-4 py-3 text-center">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="edit.php?id=<?= $data['ID_BARANG']; ?>" 
+                                    <a href="edit.php?id=<?= $data['id_barang']; ?>" 
                                        class="btn btn-outline-warning">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="hapus.php?id=<?= $data['ID_BARANG']; ?>" 
+                                    <a href="hapus.php?id=<?= $data['id_barang']; ?>" 
                                        class="btn btn-outline-danger"
                                        onclick="return confirm('Yakin ingin menghapus data ini?')">
                                         <i class="fas fa-trash"></i>
