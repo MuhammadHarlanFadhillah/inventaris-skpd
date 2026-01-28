@@ -1,97 +1,120 @@
-<?php 
+<?php
+// TAMBAHAN 1: Buffer biar gak blank putih pas redirect
 ob_start(); 
+
 include '../config/koneksi.php';
+include '../layout/header.php';
 
-// --- HAPUS PENYEBAB ERROR DATABASE (PENTING) ---
-// Kita matikan trigger bawaan Windows yang suka bikin error di Railway
-mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_masuk");
-mysqli_query($conn, "DROP TRIGGER IF EXISTS update_stok_keluar");
-mysqli_query($conn, "DROP TRIGGER IF EXISTS barang_masuk");
-mysqli_query($conn, "DROP TRIGGER IF EXISTS barang_keluar");
-// -----------------------------------------------
-
+// ================================
+// PROSES SIMPAN DATA
+// ================================
 if (isset($_POST['simpan'])) {
-    $id_brg = $_POST['id_barang'];
-    $tgl    = $_POST['tanggal'];
-    $jenis  = $_POST['jenis'];
-    $jml    = (int) $_POST['jumlah'];
-    $harga  = str_replace('.', '', $_POST['harga']);
-    
-    $id_stok = "TRX-" . time();
-    $id_skpd = "SKPD-01"; // Default
 
-    // 1. INSERT HEADER
-    $q1 = "INSERT INTO stok_persediaan (id_stok, id_skpd, tgl_periode) VALUES ('$id_stok', '$id_skpd', '$tgl')";
-    if (!mysqli_query($conn, $q1)) {
-        die("<h3>Gagal Header: " . mysqli_error($conn) . "</h3>");
+    $id     = trim(htmlspecialchars($_POST['id']));
+    $nama   = trim(htmlspecialchars($_POST['nama']));
+    $satuan = trim(htmlspecialchars($_POST['satuan']));
+    $spek   = trim(htmlspecialchars($_POST['spek']));
+
+    // PERBAIKAN 1: Ganti BARANG jadi barang (huruf kecil)
+    // PERBAIKAN 2: Ganti ID_BARANG jadi id_barang (huruf kecil)
+    $cek = mysqli_query($conn, "SELECT id_barang FROM barang WHERE id_barang = '$id'");
+    
+    // Cek error query (buat jaga-jaga)
+    if (!$cek) {
+        die("Error Cek ID: " . mysqli_error($conn));
     }
 
-    // 2. INSERT DETAIL
-    $qin  = ($jenis == 'MASUK') ? $jml : 0;
-    $qout = ($jenis == 'KELUAR') ? $jml : 0;
-    
-    $q2 = "INSERT INTO detail_stok (id_stok, id_barang, harga_satuan, kuantitas_masuk, kuantitas_keluar) 
-           VALUES ('$id_stok', '$id_brg', '$harga', '$qin', '$qout')";
-    
-    if (!mysqli_query($conn, $q2)) {
-        mysqli_query($conn, "DELETE FROM stok_persediaan WHERE id_stok='$id_stok'"); // Rollback
-        die("<h3>Gagal Detail: " . mysqli_error($conn) . "</h3>");
-    }
+    if (mysqli_num_rows($cek) > 0) {
 
-    // 3. UPDATE STOK MANUAL (Biar gak error trigger)
-    if ($jenis == 'MASUK') {
-        mysqli_query($conn, "UPDATE barang SET stok_akhir = stok_akhir + $jml WHERE id_barang = '$id_brg'");
+        echo "<script>alert('❌ Gagal! ID Barang sudah digunakan.');</script>";
+
     } else {
-        mysqli_query($conn, "UPDATE barang SET stok_akhir = stok_akhir - $jml WHERE id_barang = '$id_brg'");
-    }
 
-    // SUKSES -> REDIRECT PAKAI JS (ANTI BLANK/ERROR 500)
-    echo "<script>
-        alert('✅ Data Berhasil Disimpan!'); 
-        window.location.href='index.php';
-    </script>";
-    exit;
+        // PERBAIKAN 3: Jangan pake CALL, pake INSERT manual biar aman dari huruf besar
+        // Pastikan nama kolom sesuai dengan database lu (biasanya kecil semua)
+        $sql = "INSERT INTO barang (id_barang, nama_barang, satuan, spesifikasi, stok_akhir) 
+                VALUES ('$id', '$nama', '$satuan', '$spek', 0)";
+        
+        $exec = mysqli_query($conn, $sql);
+
+        if ($exec) {
+            // PERBAIKAN 4: Redirect pake JavaScript biar gak blank
+            echo "<script>
+                alert('✅ Data barang berhasil ditambahkan!');
+                window.location.href = 'index.php';
+            </script>";
+            exit; // Stop script biar gak lanjut ke bawah
+
+        } else {
+            echo "<div class='alert alert-danger mt-3'>
+                    <strong>Error:</strong> " . mysqli_error($conn) . "
+                  </div>";
+        }
+    }
 }
 ?>
 
-<?php include '../layout/header.php'; ?>
-
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow rounded-4">
-            <div class="card-header bg-primary text-white py-3"><h5 class="mb-0">Transaksi Baru</h5></div>
-            <div class="card-body p-4">
+    <div class="col-lg-6 col-md-8">
+
+        <div class="mb-3">
+            <a href="index.php" class="text-decoration-none text-muted">
+                <i class="fas fa-arrow-left me-2"></i>Kembali ke Daftar
+            </a>
+        </div>
+
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fas fa-cube me-2"></i>Form Input Barang
+                </h5>
+            </div>
+
+            <div class="card-body p-4 bg-white">
                 <form method="POST">
-                    <div class="mb-3">
-                        <label>Barang</label>
-                        <select name="id_barang" class="form-select" required>
-                            <option value="">Pilih...</option>
-                            <?php
-                            $q = mysqli_query($conn, "SELECT * FROM barang ORDER BY nama_barang ASC");
-                            while ($r = mysqli_fetch_assoc($q)) {
-                                // Paksa ambil data (huruf besar/kecil)
-                                $id = $r['id_barang'] ?? $r['ID_BARANG'];
-                                $nm = $r['nama_barang'] ?? $r['NAMA_BARANG'];
-                                $st = $r['stok_akhir'] ?? $r['STOK_AKHIR'];
-                                echo "<option value='$id'>$nm (Sisa: $st)</option>";
-                            }
-                            ?>
-                        </select>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">ID Barang (Kode Unik)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-barcode"></i>
+                            </span>
+                            <input type="text" name="id" class="form-control"
+                                   placeholder="Contoh: B001" required autofocus>
+                        </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col"><label>Tanggal</label><input type="date" name="tanggal" value="<?= date('Y-m-d') ?>" class="form-control"></div>
-                        <div class="col"><label>Harga</label><input type="number" name="harga" class="form-control"></div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">Nama Barang</label>
+                        <input type="text" name="nama" class="form-control" required>
                     </div>
-                    <div class="mb-3">
-                        <label>Jenis</label><br>
-                        <input type="radio" name="jenis" value="MASUK" checked> Masuk
-                        <input type="radio" name="jenis" value="KELUAR" class="ms-3"> Keluar
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold text-dark">Satuan</label>
+                            <input type="text" name="satuan" class="form-control"
+                                   placeholder="Unit / Pcs" required>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold text-dark">Spesifikasi</label>
+                            <input type="text" name="spek" class="form-control"
+                                   placeholder="Opsional">
+                        </div>
                     </div>
-                    <div class="mb-3"><label>Jumlah</label><input type="number" name="jumlah" class="form-control" required></div>
-                    <button type="submit" name="simpan" class="btn btn-primary w-100 rounded-pill">Simpan</button>
+
+                    <button type="submit" name="simpan"
+                            class="btn btn-primary w-100 rounded-pill fw-bold">
+                        <i class="fas fa-save me-2"></i>Simpan Data
+                    </button>
+
                 </form>
             </div>
         </div>
     </div>
 </div>
-<?php include '../layout/footer.php'; ob_end_flush(); ?>
+
+<?php 
+include '../layout/footer.php'; 
+ob_end_flush(); // Tutup buffer
+?>
