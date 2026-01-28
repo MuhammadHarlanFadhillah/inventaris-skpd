@@ -1,17 +1,16 @@
 <?php 
-// --- PERBAIKAN: PANGGIL KONEKSI DULUAN ---
-// Agar variabel $conn dikenali di baris bawahnya
+// --- KONEKSI DATABASE ---
 include 'config/koneksi.php'; 
 
-// Memanggil header untuk tampilan navbar
+// --- HEADER ---
 include 'layout/header.php'; 
 
-// --- [LOGIKA PHP UNTUK DASHBOARD] ---
+// --- [LOGIKA PHP DASHBOARD] ---
 
 // 1. Hitung Jumlah Barang
 $jumlah_barang = 0;
-// Sekarang $conn sudah dikenali, jadi tidak akan error lagi
-$query_barang = mysqli_query($conn, "SELECT COUNT(*) as total FROM BARANG");
+// PERBAIKAN: Ubah 'BARANG' jadi 'barang' (huruf kecil)
+$query_barang = mysqli_query($conn, "SELECT COUNT(*) as total FROM barang");
 
 if($query_barang) {
     $data_barang = mysqli_fetch_assoc($query_barang);
@@ -20,14 +19,15 @@ if($query_barang) {
 
 // 2. Hitung Jumlah Transaksi
 $jumlah_transaksi = 0;
-$query_trx = mysqli_query($conn, "SELECT COUNT(*) as total FROM STOK_PERSEDIAAN");
+// PERBAIKAN: Ubah 'STOK_PERSEDIAAN' jadi 'stok_persediaan' (huruf kecil)
+$query_trx = mysqli_query($conn, "SELECT COUNT(*) as total FROM stok_persediaan");
 
 if($query_trx){
     $data_trx = mysqli_fetch_assoc($query_trx);
     $jumlah_transaksi = $data_trx['total'];
 }
 
-// 3. Cek Host (Untuk info server)
+// 3. Info Server
 $server_host = $_SERVER['SERVER_NAME'];
 ?>
 
