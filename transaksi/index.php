@@ -3,32 +3,41 @@ include '../config/koneksi.php';
 include '../layout/header.php';
 ?>
 
-<div class="d-flex justify-content-between align-items-center pt-3 pb-3 mb-3 border-bottom">
-    <h1 class="h2 text-primary fw-bold">Riwayat Transaksi</h1>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-3 mb-3 border-bottom">
+    <div>
+        <h1 class="h2 text-primary fw-bold">
+            <i class="fas fa-history me-2"></i>Riwayat Transaksi
+        </h1>
+        <p class="text-muted mb-0">Daftar transaksi barang masuk dan keluar.</p>
+    </div>
     <div class="btn-toolbar gap-2">
-        <a href="tambah.php" class="btn btn-primary rounded-pill px-4">Baru</a>
-        <a href="hapus_semua.php" class="btn btn-danger rounded-pill px-4" onclick="return confirm('Reset semua?')">Reset</a>
+        <a href="tambah.php" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <i class="fas fa-plus me-2"></i>Baru
+        </a>
+        <a href="hapus_semua.php" class="btn btn-danger rounded-pill px-4 shadow-sm" onclick="return confirm('⚠️ Hapus SEMUA riwayat transaksi?')">
+            <i class="fas fa-trash-alt me-2"></i>Reset
+        </a>
     </div>
 </div>
 
 <div class="card border-0 shadow-sm rounded-4">
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover mb-0" id="datatable">
+            <table class="table table-hover align-middle mb-0" id="datatable">
                 <thead class="bg-light">
                     <tr>
-                        <th class="ps-4">Tanggal</th>
-                        <th>Barang</th>
-                        <th class="text-center">Jenis</th>
-                        <th class="text-center">Jumlah</th>
-                        <th class="text-end">Harga</th>
-                        <th class="text-center pe-4">Aksi</th>
+                        <th class="ps-4 py-3">Tanggal</th>
+                        <th class="py-3">Barang</th>
+                        <th class="text-center py-3">Jenis</th>
+                        <th class="text-center py-3">Jumlah</th>
+                        <th class="text-end py-3">Harga</th>
+                        <th class="text-center py-3 pe-4">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
-                    // QUERY DENGAN ALIAS (SOLUSI DATA GAK MUNCUL)
-                    // Kita paksa outputnya jadi 'id_stok', 'tgl', dll.
+                    // QUERY KHUSUS TRANSAKSI (JOIN 3 TABEL)
+                    // Menggunakan ALIAS (AS ...) agar terbaca di Railway (Linux)
                     $q = "SELECT 
                             h.id_stok AS id_stok, 
                             h.tgl_periode AS tgl,
@@ -44,33 +53,44 @@ include '../layout/header.php';
                     
                     $res = mysqli_query($conn, $q);
 
-                    // Debugging kalau query error
-                    if (!$res) {
-                        echo "<tr><td colspan='6' class='text-danger text-center'>Query Error: ".mysqli_error($conn)."</td></tr>";
-                    }
-                    elseif (mysqli_num_rows($res) > 0) {
+                    if ($res && mysqli_num_rows($res) > 0) {
                         while ($row = mysqli_fetch_assoc($res)) {
-                            // TAMPILKAN DATA (Pake kunci ALIAS tadi)
-                            $jenis = ($row['q_in'] > 0) ? "<span class='badge bg-success'>Masuk</span>" : "<span class='badge bg-danger'>Keluar</span>";
-                            $qty   = ($row['q_in'] > 0) ? $row['q_in'] : $row['q_out'];
+                            // TENTUKAN JENIS (MASUK / KELUAR)
+                            if ($row['q_in'] > 0) {
+                                $jenis = "<span class='badge bg-success bg-opacity-10 text-success px-3 rounded-pill'>Masuk</span>";
+                                $qty   = $row['q_in'];
+                                $cls   = "text-success fw-bold";
+                            } else {
+                                $jenis = "<span class='badge bg-danger bg-opacity-10 text-danger px-3 rounded-pill'>Keluar</span>";
+                                $qty   = $row['q_out'];
+                                $cls   = "text-danger fw-bold";
+                            }
                     ?>
                     <tr>
-                        <td class="ps-4"><?= date('d/m/Y', strtotime($row['tgl'])) ?></td>
+                        <td class="ps-4 text-muted">
+                            <?= date('d/m/Y', strtotime($row['tgl'])) ?>
+                        </td>
                         <td>
-                            <b><?= htmlspecialchars($row['nama']) ?></b><br>
-                            <small class="text-muted"><?= $row['id_brg'] ?></small>
+                            <span class="fw-bold text-dark"><?= htmlspecialchars($row['nama']) ?></span><br>
+                            <small class="text-muted">Kode: <?= htmlspecialchars($row['id_brg']) ?></small>
                         </td>
                         <td class="text-center"><?= $jenis ?></td>
-                        <td class="text-center fw-bold"><?= $qty ?></td>
-                        <td class="text-end"><?= number_format($row['harga']) ?></td>
-                        <td class="text-center">
-                            <a href="hapus.php?id=<?= $row['id_stok'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus?')">Hapus</a>
+                        <td class="text-center <?= $cls ?>"><?= $qty ?></td>
+                        <td class="text-end fw-bold text-secondary">
+                            Rp <?= number_format($row['harga'], 0, ',', '.') ?>
+                        </td>
+                        <td class="text-center pe-4">
+                            <a href="hapus.php?id=<?= $row['id_stok'] ?>" 
+                               class="btn btn-sm btn-outline-danger rounded-pill" 
+                               onclick="return confirm('Yakin hapus transaksi ini?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
                         </td>
                     </tr>
                     <?php 
                         }
                     } else { 
-                        // TAMPILAN KOSONG (6 KOLOM MANUAL BIAR GAK POPUP ERROR)
+                        // JIKA KOSONG: Tampilkan 6 kolom manual (Biar DataTables Gak Error)
                     ?>
                     <tr>
                         <td class="text-center">-</td>
@@ -86,4 +106,5 @@ include '../layout/header.php';
         </div>
     </div>
 </div>
+
 <?php include '../layout/footer.php'; ?>
