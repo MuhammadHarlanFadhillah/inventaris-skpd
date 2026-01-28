@@ -49,11 +49,18 @@ if (isset($_POST['simpan'])) {
             } else {
                 $q3 = "UPDATE barang SET stok_akhir = stok_akhir - $jml WHERE id_barang = '$id_brg'";
             }
-            mysqli_query($conn, $q3);
-
-            // SUKSES -> Redirect JS
-            echo "<script>alert('✅ Berhasil Disimpan!'); window.location='index.php';</script>";
-            exit;
+            
+            if (mysqli_query($conn, $q3)) {
+                // SUKSES -> Redirect PHP (lebih aman untuk Railway)
+                ob_end_clean(); // Bersihkan buffer sebelum redirect
+                header("Location: index.php?msg=success");
+                exit;
+            } else {
+                // Gagal Update Stok -> Rollback semua
+                mysqli_query($conn, "DELETE FROM detail_stok WHERE id_stok='$id_stok'");
+                mysqli_query($conn, "DELETE FROM stok_persediaan WHERE id_stok='$id_stok'");
+                die("<br><h3>Gagal Update Stok: " . mysqli_error($conn) . "</h3>");
+            }
 
         } else {
             // Gagal Detail -> Hapus Header

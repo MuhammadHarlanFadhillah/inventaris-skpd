@@ -11,6 +11,13 @@ include '../layout/header.php';
     </div>
 </div>
 
+<?php if (isset($_GET['msg']) && $_GET['msg'] == 'success'): ?>
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <strong>✅ Berhasil!</strong> Transaksi telah disimpan.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+<?php endif; ?>
+
 <div class="card border-0 shadow-sm rounded-4">
     <div class="card-body p-0">
         <div class="table-responsive">
