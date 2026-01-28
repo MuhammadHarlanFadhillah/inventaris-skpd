@@ -1,0 +1,15 @@
+# File koneksi database (SENSITIF)
+config/koneksi.php
+
+# Folder database / dump SQL
+DATABASE/
+
+# Environment file (kalau nanti ada)
+.env
+
+# Log file
+*.log
+
+# OS / editor junk
+.DS_Store
+Thumbs.db

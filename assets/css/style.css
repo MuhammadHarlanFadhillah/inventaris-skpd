@@ -1,0 +1,123 @@
+/* =========================================
+   1. RESET & TYPOGRAPHY
+   ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f6f9; /* Abu-abu muda soft */
+    color: #333; 
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Memastikan footer selalu di bawah */
+}
+
+/* =========================================
+   2. NAVBAR & HEADER
+   ========================================= */
+.navbar-brand {
+    letter-spacing: 0.5px;
+}
+
+.navbar-brand:hover {
+    transform: translateY(-2px);
+    transition: 0.3s;
+}
+
+/* =========================================
+   3. HERO SECTION (BANNER ATAS)
+   ========================================= */
+.hero-gradient {
+    /* Gradasi Biru Modern */
+    background: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%);
+    position: relative;
+    overflow: hidden;
+    border: none;
+}
+
+/* Hiasan lingkaran transparan di background (Aesthetic) */
+.hero-gradient::after {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* Animasi Berdenyut untuk Badge Database */
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+.badge-pulse {
+    animation: pulse-green 2s infinite;
+}
+
+/* =========================================
+   4. CARDS (KARTU MENU) - "CLEAN STYLE & SIMETRIS"
+   ========================================= */
+.card {
+    border: none; 
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background-color: #fff;
+    /* PENTING: Flex column memastikan isi kartu mengisi penuh tinggi */
+    display: flex;
+    flex-direction: column; 
+    height: 100%;
+}
+
+/* Efek saat kartu ditunjuk mouse */
+.card-hover:hover {
+    transform: translateY(-10px); 
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important; 
+    cursor: pointer;
+}
+
+/* Efek Animasi Ikon (Membesar & Goyang) */
+.card-hover:hover i.fa-3x {
+    transform: scale(1.15) rotate(5deg); 
+    transition: transform 0.3s ease;
+}
+
+/* Styling Khusus Judul Kecil (TOTAL BARANG, dll) */
+.ls-1 {
+    letter-spacing: 1.5px; /* Spasi antar huruf diperlebar */
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* PENTING: Perbaikan Keterbacaan Teks Deskripsi */
+.card-text {
+    font-size: 0.95rem; /* Ukuran font sedikit lebih besar */
+    line-height: 1.6;   /* Jarak antar baris lebih lega */
+    color: #495057;     /* Warna abu gelap, bukan abu pudar */
+}
+
+/* =========================================
+   5. BUTTONS & UTILITIES
+   ========================================= */
+.btn {
+    transition: all 0.3s;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Container Utama agar footer tidak naik */
+.container-utama {
+    flex: 1;
+}
+
+/* Alert Panduan */
+.alert-info {
+    background-color: #ffffff;
+    border-left: 5px solid #0d6efd;
+}
