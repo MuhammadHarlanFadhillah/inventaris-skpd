@@ -62,7 +62,7 @@ $server_host = $_SERVER['SERVER_NAME'];
         </p>
         
         <div class="mt-4">
-            <?php if($koneksi): ?>
+            <?php if($conn): ?>
                 <span class="badge bg-white text-success fw-bold p-2 px-3 rounded-pill shadow-sm badge-pulse">
                     <i class="fas fa-check-circle me-1"></i> Database Terhubung
                 </span>
