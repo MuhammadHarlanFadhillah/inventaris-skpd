@@ -115,7 +115,7 @@ $server_host = $_SERVER['SERVER_NAME'];
                 <h2 class="fw-bold text-dark mb-1" style="font-size: 2.5rem;">Cetak</h2>
                 <h6 class="text-secondary fw-bold text-uppercase ls-1 mb-3">Laporan Akhir</h6>
                 <p class="card-text text-dark opacity-75 mb-4 small">Rekapitulasi stok dan cetak PDF.</p>
-                <a href="laporan/index.php" class="btn btn-outline-info text-dark w-100 rounded-pill py-2 fw-medium mt-auto stretched-link">
+                <a href="laporan/laporan.php" class="btn btn-outline-info text-dark w-100 rounded-pill py-2 fw-medium mt-auto stretched-link">
                     Lihat Laporan <i class="fas fa-arrow-right ms-2"></i>
                 </a>
             </div>
