@@ -5,23 +5,23 @@ include 'config/koneksi.php';
 
 if(isset($_POST['btn_login'])){
     // Ambil input dan amankan string
-    $username = mysqli_real_escape_string($koneksi, $_POST['username']); 
+    $username = mysqli_real_escape_string($conn, $_POST['username']); 
     $password = md5($_POST['password']); 
 
-    // Cek Database
-    $query = mysqli_query($koneksi, "SELECT * FROM USER WHERE USERNAME='$username' AND PASSWORD='$password'");
+    // Cek Database (lowercase untuk Railway/Linux)
+    $query = mysqli_query($conn, "SELECT * FROM user WHERE username='$username' AND password='$password'");
     $cek   = mysqli_num_rows($query);
 
     if($cek > 0){
         $data = mysqli_fetch_assoc($query);
         
         $_SESSION['status']   = "login";
-        $_SESSION['id_user']  = $data['ID_USER'];
-        $_SESSION['nama']     = $data['NAMA_LENGKAP'];
-        $_SESSION['level']    = $data['LEVEL'];
+        $_SESSION['id_user']  = $data['id_user'];
+        $_SESSION['nama']     = $data['nama_lengkap'];
+        $_SESSION['level']    = $data['level'];
 
         echo "<script>
-                alert('Selamat Datang, " . $data['NAMA_LENGKAP'] . "!');
+                                alert('Selamat Datang, " . $data['nama_lengkap'] . "!');
                 window.location='index.php';
               </script>";
     } else {
