@@ -6,7 +6,7 @@
 include '../config/koneksi.php';
 
 // Cek koneksi
-if (!isset($koneksi)) {
+if (!isset($conn)) {
     die("Koneksi database bermasalah. Pastikan config/koneksi.php benar.");
 }
 
