@@ -16,7 +16,7 @@ if (isset($_POST['simpan'])) {
 
     // 2. CEK DUPLIKAT ID BARANG
     // Menggunakan variabel $koneksi
-    $cek = mysqli_query($conn, "SELECT ID_BARANG FROM BARANG WHERE ID_BARANG = '$id'");
+    $cek = mysqli_query($conn, "SELECT id_barang FROM barang WHERE id_barang = '$id'");
     
     if (mysqli_num_rows($cek) > 0) {
         // Jika ID sudah ada
@@ -26,8 +26,8 @@ if (isset($_POST['simpan'])) {
     } else {
 
         // 3. SIMPAN KE DATABASE (Query Standard)
-        // Set STOK_AKHIR default 0 saat barang baru dibuat
-        $sql  = "INSERT INTO BARANG (ID_BARANG, NAMA_BARANG, SATUAN, SPESIFIKASI, STOK_AKHIR) 
+        // Set stok_akhir default 0 saat barang baru dibuat
+        $sql  = "INSERT INTO barang (id_barang, nama_barang, satuan, spesifikasi, stok_akhir) 
                  VALUES ('$id', '$nama', '$satuan', '$spek', 0)";
         
         $exec = mysqli_query($conn, $sql);

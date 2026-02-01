@@ -14,7 +14,7 @@ if (!isset($_GET['id'])) {
 $id_barang = mysqli_real_escape_string($koneksi, $_GET['id']);
 
 // Ambil data barang berdasarkan ID
-$query_ambil = mysqli_query($conn, "SELECT * FROM BARANG WHERE ID_BARANG = '$id_barang'");
+$query_ambil = mysqli_query($conn, "SELECT * FROM barang WHERE id_barang = '$id_barang'");
 $data = mysqli_fetch_assoc($query_ambil);
 
 // Jika data tidak ditemukan (misal ID asal-asalan)
@@ -37,11 +37,11 @@ if (isset($_POST['update'])) {
     $spek   = mysqli_real_escape_string($koneksi, $_POST['spek']);
 
     // Query Update
-    $query_update = "UPDATE BARANG SET 
-                        NAMA_BARANG = '$nama', 
-                        SATUAN      = '$satuan', 
-                        SPESIFIKASI = '$spek' 
-                     WHERE ID_BARANG = '$id_barang'";
+    $query_update = "UPDATE barang SET 
+                        nama_barang = '$nama', 
+                        satuan      = '$satuan', 
+                        spesifikasi = '$spek' 
+                     WHERE id_barang = '$id_barang'";
 
     if (mysqli_query($conn, $query_update)) {
         echo "<script>
@@ -79,7 +79,7 @@ if (isset($_POST['update'])) {
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-muted">ID BARANG (Tidak bisa diubah)</label>
                         <input type="text"
-                               value="<?= htmlspecialchars($data['ID_BARANG']); ?>"
+                               value="<?= htmlspecialchars($data['id_barang']); ?>"
                                class="form-control bg-light fw-bold text-dark"
                                readonly>
                     </div>
@@ -87,7 +87,7 @@ if (isset($_POST['update'])) {
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark small">NAMA BARANG</label>
                         <input type="text" name="nama" class="form-control"
-                               value="<?= htmlspecialchars($data['NAMA_BARANG']); ?>"
+                               value="<?= htmlspecialchars($data['nama_barang']); ?>"
                                required>
                     </div>
 
@@ -95,7 +95,7 @@ if (isset($_POST['update'])) {
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold text-dark small">SATUAN</label>
                             <input type="text" name="satuan" class="form-control"
-                                   value="<?= htmlspecialchars($data['SATUAN']); ?>" required>
+                                   value="<?= htmlspecialchars($data['satuan']); ?>" required>
                         </div>
 
                         <div class="col-md-6 mb-3">

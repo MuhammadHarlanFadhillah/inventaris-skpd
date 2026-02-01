@@ -33,7 +33,7 @@ if (isset($_POST['simpan_transaksi'])) {
         // Kita tetap perlu cek stok di awal untuk mencegah error negatif
         if ($jenis == 'KELUAR') {
             // Cek stok saat ini dulu (For Update mengunci baris agar tidak ditabrak user lain)
-            $cek = mysqli_query($conn, "SELECT STOK_AKHIR, NAMA_BARANG FROM BARANG WHERE ID_BARANG = '$id_barang' FOR UPDATE");
+            $cek = mysqli_query($conn, "SELECT stok_akhir, nama_barang FROM barang WHERE id_barang = '$id_barang' FOR UPDATE");
             $data_barang = mysqli_fetch_assoc($cek);
 
             if ($data_barang['STOK_AKHIR'] < $jumlah) {
@@ -118,7 +118,7 @@ if (isset($_POST['simpan_transaksi'])) {
                             <option value="">-- Cari Nama Barang --</option>
                             <?php
                             // Ambil data barang untuk dropdown
-                            $b = mysqli_query($conn, "SELECT ID_BARANG, NAMA_BARANG, SATUAN, STOK_AKHIR FROM BARANG ORDER BY NAMA_BARANG ASC");
+                            $b = mysqli_query($conn, "SELECT id_barang, nama_barang, satuan, stok_akhir FROM barang ORDER BY nama_barang ASC");
                             while ($row = mysqli_fetch_assoc($b)) {
                                 echo "<option value='{$row['ID_BARANG']}'>
                                         {$row['NAMA_BARANG']} (Sisa Stok: {$row['STOK_AKHIR']} {$row['SATUAN']})

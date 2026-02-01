@@ -11,7 +11,7 @@ include 'layout/header.php';
 // 1. Hitung Jumlah Barang
 $jumlah_barang = 0;
 // Menggunakan variabel $conn (sesuai config)
-$query_barang = mysqli_query($conn, "SELECT COUNT(*) as total FROM BARANG");
+$query_barang = mysqli_query($conn, "SELECT COUNT(*) as total FROM barang");
 
 if($query_barang) {
     $data_barang = mysqli_fetch_assoc($query_barang);
@@ -20,7 +20,7 @@ if($query_barang) {
 
 // 2. Hitung Jumlah Transaksi
 $jumlah_transaksi = 0;
-$query_trx = mysqli_query($conn, "SELECT COUNT(*) as total FROM STOK_PERSEDIAAN");
+$query_trx = mysqli_query($conn, "SELECT COUNT(*) as total FROM stok_persediaan");
 
 if($query_trx){
     $data_trx = mysqli_fetch_assoc($query_trx);

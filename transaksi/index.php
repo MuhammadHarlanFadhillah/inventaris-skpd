@@ -57,16 +57,16 @@ if (!isset($koneksi)) {
                             SELECT 
                                 h.ID_STOK,
                                 h.TGL_PERIODE,
-                                b.ID_BARANG,
-                                b.NAMA_BARANG,
-                                b.SATUAN,
-                                d.KUANTITAS_MASUK,
-                                d.KUANTITAS_KELUAR,
-                                d.HARGA_SATUAN
-                            FROM STOK_PERSEDIAAN h
-                            JOIN DETAIL_STOK d ON h.ID_STOK = d.ID_STOK
-                            JOIN BARANG b ON d.ID_BARANG = b.ID_BARANG
-                            ORDER BY h.TGL_PERIODE DESC, h.ID_STOK DESC
+                                b.id_barang,
+                                b.nama_barang,
+                                b.satuan,
+                                d.kuantitas_masuk,
+                                d.kuantitas_keluar,
+                                d.harga_satuan
+                            FROM stok_persediaan h
+                            JOIN detail_stok d ON h.id_stok = d.id_stok
+                            JOIN barang b ON d.id_barang = b.id_barang
+                            ORDER BY h.tgl_periode DESC, h.id_stok DESC
                         ";
 
                         $result = mysqli_query($conn, $query);

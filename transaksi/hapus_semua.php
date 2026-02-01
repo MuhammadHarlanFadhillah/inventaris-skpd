@@ -12,14 +12,14 @@ mysqli_begin_transaction($koneksi);
 try {
     // 1. KOSONGKAN TABEL TRANSAKSI
     // Hapus detail dulu karena Foreign Key
-    mysqli_query($conn, "DELETE FROM DETAIL_STOK");
+    mysqli_query($conn, "DELETE FROM detail_stok");
     
     // Hapus header
-    mysqli_query($conn, "DELETE FROM STOK_PERSEDIAAN");
+    mysqli_query($conn, "DELETE FROM stok_persediaan");
 
     // 2. RESET STOK BARANG MENJADI 0
     // Karena riwayat hilang, stok fisik dianggap nol kembali
-    $reset_stok = mysqli_query($conn, "UPDATE BARANG SET STOK_AKHIR = 0");
+    $reset_stok = mysqli_query($conn, "UPDATE barang SET stok_akhir = 0");
 
     if (!$reset_stok) {
         throw new Exception("Gagal mereset stok barang.");

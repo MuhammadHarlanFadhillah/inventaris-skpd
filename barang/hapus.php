@@ -14,7 +14,7 @@ if (isset($_GET['id'])) {
     try {
         // Proses hapus barang
         // REVISI: Menggunakan $koneksi
-        $sql   = "DELETE FROM BARANG WHERE ID_BARANG = '$id'";
+        $sql   = "DELETE FROM barang WHERE id_barang = '$id'";
         $hapus = mysqli_query($conn, $sql);
 
         if ($hapus) {
