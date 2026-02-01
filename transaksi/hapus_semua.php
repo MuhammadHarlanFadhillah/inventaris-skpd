@@ -1,42 +1,43 @@
 <?php
 // =======================================================
-// HAPUS SEMUA TRANSAKSI
+// HAPUS SEMUA RIWAYAT & RESET STOK KE 0
 // =======================================================
 include '../config/koneksi.php';
 
-if (!isset($conn)) {
-    die('Koneksi database tidak tersedia.');
-}
+// Cek akses langsung
+if (!isset($koneksi)) { die('Error Koneksi'); }
 
-mysqli_begin_transaction($conn);
+mysqli_begin_transaction($koneksi);
 
 try {
-    // 1. Hapus detail dulu (FK aman) 
-    // PERBAIKAN: Ganti 'DETAIL_STOK' jadi 'detail_stok' (huruf kecil)
-    if (!mysqli_query($conn, "DELETE FROM detail_stok")) {
-        throw new Exception(mysqli_error($conn));
+    // 1. KOSONGKAN TABEL TRANSAKSI
+    // Hapus detail dulu karena Foreign Key
+    mysqli_query($conn, "DELETE FROM DETAIL_STOK");
+    
+    // Hapus header
+    mysqli_query($conn, "DELETE FROM STOK_PERSEDIAAN");
+
+    // 2. RESET STOK BARANG MENJADI 0
+    // Karena riwayat hilang, stok fisik dianggap nol kembali
+    $reset_stok = mysqli_query($conn, "UPDATE BARANG SET STOK_AKHIR = 0");
+
+    if (!$reset_stok) {
+        throw new Exception("Gagal mereset stok barang.");
     }
 
-    // 2. Hapus header
-    // PERBAIKAN: Ganti 'STOK_PERSEDIAAN' jadi 'stok_persediaan' (huruf kecil)
-    if (!mysqli_query($conn, "DELETE FROM stok_persediaan")) {
-        throw new Exception(mysqli_error($conn));
-    }
+    mysqli_commit($koneksi);
 
-    // 3. (OPSIONAL) Reset stok barang
-    // Kalau mau diaktifkan, pastikan nama tabel 'barang' huruf kecil juga
-    // mysqli_query($conn, "UPDATE barang SET stok_akhir = 0");
-
-    mysqli_commit($conn);
-
-    // ✅ Redirect wajib
-    header("Location: index.php?msg=hapus_semua_sukses");
-    exit;
+    echo "<script>
+        alert('✅ DATABASE DI-RESET!\\nSemua riwayat dihapus dan stok barang kembali ke 0.');
+        window.location = 'index.php';
+    </script>";
 
 } catch (Exception $e) {
-    mysqli_rollback($conn);
-    // Gw tambahin error message biar ketahuan kalau gagal kenapa
-    header("Location: index.php?msg=hapus_semua_gagal&error=" . urlencode($e->getMessage()));
-    exit;
+    mysqli_rollback($koneksi);
+    
+    echo "<script>
+        alert('❌ Gagal Reset: " . $e->getMessage() . "');
+        window.location = 'index.php';
+    </script>";
 }
 ?>

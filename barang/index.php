@@ -1,5 +1,9 @@
+index 
+
 <?php
+// Panggil koneksi (Pastikan path benar)
 include '../config/koneksi.php';
+// Panggil header
 include '../layout/header.php';
 ?>
 
@@ -11,7 +15,7 @@ include '../layout/header.php';
                 <i class="fas fa-boxes me-2"></i>Master Data Barang
             </h3>
             <p class="text-muted small mb-0">
-                Kelola daftar aset dan spesifikasi barang.
+                Kelola daftar aset dan spesifikasi barang SKPD.
             </p>
         </div>
         <a href="tambah.php" class="btn btn-primary rounded-pill px-4 shadow-sm">
@@ -22,73 +26,66 @@ include '../layout/header.php';
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0 w-100">
                     <thead class="bg-light text-secondary">
                         <tr>
-                            <th class="px-4 py-3 small fw-bold">ID</th>
-                            <th class="px-4 py-3 small fw-bold">Nama Barang</th>
-                            <th class="px-4 py-3 small fw-bold">Satuan</th>
-                            <th class="px-4 py-3 small fw-bold">Spesifikasi</th>
-                            <th class="px-4 py-3 small fw-bold text-center">Stok</th>
-                            <th class="px-4 py-3 small fw-bold text-center">Aksi</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">ID Barang</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">Nama Barang</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">Satuan</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">Spesifikasi</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase text-center">Stok</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php
-                        // Query Table tetap huruf kecil (karena nama tabel di Linux sensitive)
-                        $sql = "SELECT * FROM barang ORDER BY id_barang DESC"; 
-                        
+                        // REVISI: Menggunakan $koneksi (bukan $conn)
+                        $sql = "SELECT * FROM BARANG ORDER BY ID_BARANG ASC";
                         $query = mysqli_query($conn, $sql);
 
                         if ($query && mysqli_num_rows($query) > 0) {
                             while ($data = mysqli_fetch_assoc($query)) {
-                                // --- JURUS ANTI GAGAL ---
-                                // Ambil data pakai logika "ATAU" (??). 
-                                // Kalau kecil kosong, ambil besar.
-                                $id          = $data['id_barang'] ?? $data['ID_BARANG'];
-                                $nama_barang = $data['nama_barang'] ?? $data['NAMA_BARANG'];
-                                $satuan      = $data['satuan'] ?? $data['SATUAN'];
-                                $spesifikasi = $data['spesifikasi'] ?? $data['SPESIFIKASI'];
-                                $stok        = $data['stok_akhir'] ?? $data['STOK_AKHIR'];
                         ?>
                         <tr>
-                            <td class="px-4 py-3 text-muted">
-                                #<?= htmlspecialchars($id); ?>
+                            <td class="px-4 py-3 text-muted fw-medium">
+                                <?= htmlspecialchars($data['ID_BARANG']); ?>
                             </td>
 
                             <td class="px-4 py-3 fw-bold text-dark">
-                                <?= htmlspecialchars($nama_barang); ?>
+                                <?= htmlspecialchars($data['NAMA_BARANG']); ?>
                             </td>
 
                             <td class="px-4 py-3">
                                 <span class="badge bg-info bg-opacity-10 text-info border border-info rounded-pill px-3">
-                                    <?= htmlspecialchars($satuan); ?>
+                                    <?= htmlspecialchars($data['SATUAN']); ?>
                                 </span>
                             </td>
 
                             <td class="px-4 py-3 small text-muted">
-                                <?= htmlspecialchars($spesifikasi); ?>
+                                <?= htmlspecialchars($data['SPESIFIKASI']); ?>
                             </td>
 
                             <td class="px-4 py-3 text-center">
-                                <?php if ($stok > 0): ?>
-                                    <span class="fw-bold text-success">
-                                        <?= $stok; ?>
+                                <?php if ($data['STOK_AKHIR'] > 0): ?>
+                                    <span class="badge bg-success bg-opacity-75 rounded-pill px-3">
+                                        <?= $data['STOK_AKHIR']; ?>
                                     </span>
                                 <?php else: ?>
-                                    <span class="badge bg-danger">Habis</span>
+                                    <span class="badge bg-danger rounded-pill px-3">Habis</span>
                                 <?php endif; ?>
                             </td>
 
                             <td class="px-4 py-3 text-center">
-                                <div class="btn-group btn-group-sm">
-                                    <a href="edit.php?id=<?= $id; ?>" 
-                                       class="btn btn-outline-warning">
+                                <div class="btn-group btn-group-sm shadow-sm" role="group">
+                                    <a href="edit.php?id=<?= $data['ID_BARANG']; ?>" 
+                                       class="btn btn-warning text-white" 
+                                       data-bs-toggle="tooltip" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="hapus.php?id=<?= $id; ?>" 
-                                       class="btn btn-outline-danger"
-                                       onclick="return confirm('Yakin ingin menghapus data ini?')">
+                                    <a href="hapus.php?id=<?= $data['ID_BARANG']; ?>" 
+                                       class="btn btn-danger"
+                                       onclick="return confirm('Yakin ingin menghapus data ini? Stok terkait mungkin akan error jika dihapus paksa.')"
+                                       data-bs-toggle="tooltip" title="Hapus">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </div>
@@ -100,7 +97,9 @@ include '../layout/header.php';
                         ?>
                         <tr>
                             <td colspan="6" class="text-center py-5 text-muted">
-                                Belum ada data barang.
+                                <img src="https://cdn-icons-png.flaticon.com/512/7486/7486754.png" width="60" class="mb-3 opacity-50">
+                                <p class="mb-0">Belum ada data barang.</p>
+                                <small>Silakan klik tombol Tambah Barang di atas.</small>
                             </td>
                         </tr>
                         <?php } ?>

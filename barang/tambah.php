@@ -1,3 +1,4 @@
+
 <?php
 include '../config/koneksi.php';
 include '../layout/header.php';
@@ -7,61 +8,55 @@ include '../layout/header.php';
 // ================================
 if (isset($_POST['simpan'])) {
 
-    $id     = trim(htmlspecialchars($_POST['id']));
-    $nama   = trim(htmlspecialchars($_POST['nama']));
-    $satuan = trim(htmlspecialchars($_POST['satuan']));
-    $spek   = trim(htmlspecialchars($_POST['spek']));
+    // 1. Tangkap Input & Amankan dari SQL Injection
+    $id     = mysqli_real_escape_string($koneksi, $_POST['id']);
+    $nama   = mysqli_real_escape_string($koneksi, $_POST['nama']);
+    $satuan = mysqli_real_escape_string($koneksi, $_POST['satuan']);
+    $spek   = mysqli_real_escape_string($koneksi, $_POST['spek']);
 
-    // PERBAIKAN 1: Query Cek Duplikat pake huruf kecil (barang)
-    // Pastikan kolom di database namanya 'id_barang' (sesuai index.php tadi)
-    $cek = mysqli_query($conn, "SELECT id_barang FROM barang WHERE id_barang = '$id'");
+    // 2. CEK DUPLIKAT ID BARANG
+    // Menggunakan variabel $koneksi
+    $cek = mysqli_query($conn, "SELECT ID_BARANG FROM BARANG WHERE ID_BARANG = '$id'");
     
-    // Cek error query (buat debugging)
-    if(!$cek) {
-        die("Error Cek ID: " . mysqli_error($conn));
-    }
-
     if (mysqli_num_rows($cek) > 0) {
-
-        echo "<script>alert('❌ Gagal! ID Barang sudah digunakan.');</script>";
-
+        // Jika ID sudah ada
+        echo "<script>
+                alert('❌ Gagal! ID Barang ($id) sudah digunakan. Silakan gunakan ID lain.');
+              </script>";
     } else {
 
-        // PERBAIKAN 2: Ganti Stored Procedure jadi INSERT MANUAL
-        // Alasannya: Biar aman kalau stored procedure lu di database isinya masih huruf besar (INSERT INTO BARANG).
-        // Kita paksa insert ke tabel 'barang' (kecil) dari sini.
-        // Kita set stok_akhir jadi 0 (karena barang baru)
-        
-        $sql  = "INSERT INTO barang (id_barang, nama_barang, satuan, spesifikasi, stok_akhir) 
+        // 3. SIMPAN KE DATABASE (Query Standard)
+        // Set STOK_AKHIR default 0 saat barang baru dibuat
+        $sql  = "INSERT INTO BARANG (ID_BARANG, NAMA_BARANG, SATUAN, SPESIFIKASI, STOK_AKHIR) 
                  VALUES ('$id', '$nama', '$satuan', '$spek', 0)";
         
         $exec = mysqli_query($conn, $sql);
 
         if ($exec) {
             echo "<script>
-                alert('✅ Data barang berhasil ditambahkan!');
-                window.location = 'index.php';
-            </script>";
-
+                    alert('✅ Data barang berhasil ditambahkan!');
+                    window.location = 'index.php';
+                  </script>";
         } else {
-            echo "<div class='alert alert-danger mt-3'>
-                    <strong>Error:</strong> " . mysqli_error($conn) . "
+            echo "<div class='alert alert-danger alert-dismissible fade show mt-3' role='alert'>
+                    <strong>Error Database:</strong> " . mysqli_error($koneksi) . "
+                    <button type='button' class='btn-close' data-bs-dismiss='alert'></button>
                   </div>";
         }
     }
 }
 ?>
 
-<div class="row justify-content-center">
+<div class="row justify-content-center mt-4">
     <div class="col-lg-6 col-md-8">
 
         <div class="mb-3">
-            <a href="index.php" class="text-decoration-none text-muted">
+            <a href="index.php" class="text-decoration-none text-muted fw-bold">
                 <i class="fas fa-arrow-left me-2"></i>Kembali ke Daftar
             </a>
         </div>
 
-        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="card shadow border-0 rounded-4 overflow-hidden">
             <div class="card-header bg-primary text-white py-3">
                 <h5 class="mb-0 fw-bold">
                     <i class="fas fa-cube me-2"></i>Form Input Barang
@@ -69,42 +64,44 @@ if (isset($_POST['simpan'])) {
             </div>
 
             <div class="card-body p-4 bg-white">
-                <form method="POST">
+                <form method="POST" autocomplete="off">
 
                     <div class="mb-4">
-                        <label class="form-label fw-bold text-dark">ID Barang (Kode Unik)</label>
+                        <label class="form-label fw-bold text-dark small">ID BARANG (KODE UNIK)</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light">
-                                <i class="fas fa-barcode"></i>
-                            </span>
+                            <span class="input-group-text bg-light"><i class="fas fa-barcode text-muted"></i></span>
                             <input type="text" name="id" class="form-control"
-                                   placeholder="Contoh: B001" required autofocus>
+                                   placeholder="Contoh: B001" 
+                                   onkeyup="this.value = this.value.toUpperCase()" 
+                                   required autofocus>
                         </div>
+                        <div class="form-text text-muted small">ID tidak boleh sama dengan barang lain.</div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label fw-bold text-dark">Nama Barang</label>
-                        <input type="text" name="nama" class="form-control" required>
+                        <label class="form-label fw-bold text-dark small">NAMA BARANG</label>
+                        <input type="text" name="nama" class="form-control" placeholder="Contoh: Laptop Asus, Kertas A4" required>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-4">
-                            <label class="form-label fw-bold text-dark">Satuan</label>
+                            <label class="form-label fw-bold text-dark small">SATUAN</label>
                             <input type="text" name="satuan" class="form-control"
-                                   placeholder="Unit / Pcs" required>
+                                   placeholder="Unit / Pcs / Rim" required>
                         </div>
 
                         <div class="col-md-6 mb-4">
-                            <label class="form-label fw-bold text-dark">Spesifikasi</label>
+                            <label class="form-label fw-bold text-dark small">SPESIFIKASI</label>
                             <input type="text" name="spek" class="form-control"
-                                   placeholder="Opsional">
+                                   placeholder="Warna, Merk, dll (Opsional)">
                         </div>
                     </div>
 
-                    <button type="submit" name="simpan"
-                            class="btn btn-primary w-100 rounded-pill fw-bold">
-                        <i class="fas fa-save me-2"></i>Simpan Data
-                    </button>
+                    <div class="d-grid gap-2">
+                        <button type="submit" name="simpan" class="btn btn-primary rounded-pill fw-bold py-2">
+                            <i class="fas fa-save me-2"></i>SIMPAN DATA
+                        </button>
+                    </div>
 
                 </form>
             </div>

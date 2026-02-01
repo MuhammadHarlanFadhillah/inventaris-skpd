@@ -3,23 +3,21 @@ include '../config/koneksi.php';
 include '../layout/header.php';
 
 // ================================
-// AMBIL ID BARANG
+// 1. AMBIL ID BARANG DARI URL
 // ================================
 if (!isset($_GET['id'])) {
-    header('Location: index.php');
+    echo "<script>window.location='index.php';</script>";
     exit;
 }
 
-$id_barang = trim($_GET['id']);
+// Amankan ID dari URL
+$id_barang = mysqli_real_escape_string($koneksi, $_GET['id']);
 
-// PERBAIKAN 1: Query Select pakai huruf kecil (barang, id_barang)
-$query_ambil = mysqli_query(
-    $conn,
-    "SELECT * FROM barang WHERE id_barang = '$id_barang'"
-);
-
+// Ambil data barang berdasarkan ID
+$query_ambil = mysqli_query($conn, "SELECT * FROM BARANG WHERE ID_BARANG = '$id_barang'");
 $data = mysqli_fetch_assoc($query_ambil);
 
+// Jika data tidak ditemukan (misal ID asal-asalan)
 if (!$data) {
     echo "<script>
         alert('❌ Data barang tidak ditemukan!');
@@ -29,22 +27,21 @@ if (!$data) {
 }
 
 // ================================
-// PROSES UPDATE DATA
+// 2. PROSES UPDATE DATA
 // ================================
 if (isset($_POST['update'])) {
 
-    $nama   = trim(htmlspecialchars($_POST['nama']));
-    $satuan = trim(htmlspecialchars($_POST['satuan']));
-    $spek   = trim(htmlspecialchars($_POST['spek']));
+    // Sanitasi Input (Wajib pakai $koneksi)
+    $nama   = mysqli_real_escape_string($koneksi, $_POST['nama']);
+    $satuan = mysqli_real_escape_string($koneksi, $_POST['satuan']);
+    $spek   = mysqli_real_escape_string($koneksi, $_POST['spek']);
 
-    // PERBAIKAN 2: Query Update pakai huruf kecil semua
-    $query_update = "
-        UPDATE barang SET
-            nama_barang = '$nama',
-            satuan      = '$satuan',
-            spesifikasi = '$spek'
-        WHERE id_barang = '$id_barang'
-    ";
+    // Query Update
+    $query_update = "UPDATE BARANG SET 
+                        NAMA_BARANG = '$nama', 
+                        SATUAN      = '$satuan', 
+                        SPESIFIKASI = '$spek' 
+                     WHERE ID_BARANG = '$id_barang'";
 
     if (mysqli_query($conn, $query_update)) {
         echo "<script>
@@ -52,65 +49,66 @@ if (isset($_POST['update'])) {
             window.location = 'index.php';
         </script>";
     } else {
-        echo "<div class='alert alert-danger mt-3'>
-                <strong>Gagal Update:</strong> " . mysqli_error($conn) . "
+        echo "<div class='alert alert-danger mt-3 alert-dismissible fade show'>
+                <strong>Gagal Update:</strong> " . mysqli_error($koneksi) . "
+                <button type='button' class='btn-close' data-bs-dismiss='alert'></button>
               </div>";
     }
 }
 ?>
 
-<div class="row justify-content-center">
+<div class="row justify-content-center mt-4">
     <div class="col-lg-6 col-md-8">
 
-        <div class="card shadow-lg border-0 rounded-4">
-            <div class="card-header bg-warning bg-gradient text-dark py-3">
+        <div class="mb-3">
+            <a href="index.php" class="text-decoration-none text-muted fw-bold">
+                <i class="fas fa-arrow-left me-2"></i>Kembali ke Daftar
+            </a>
+        </div>
+
+        <div class="card shadow border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-warning text-dark py-3">
                 <h5 class="mb-0 fw-bold">
                     <i class="fas fa-edit me-2"></i>Edit Data Barang
                 </h5>
             </div>
 
-            <div class="card-body p-4">
+            <div class="card-body p-4 bg-white">
                 <form method="POST">
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">ID Barang</label>
+                        <label class="form-label fw-bold small text-muted">ID BARANG (Tidak bisa diubah)</label>
                         <input type="text"
-                               value="<?= htmlspecialchars($data['id_barang'] ?? $data['ID_BARANG']); ?>"
-                               class="form-control bg-light fw-bold text-muted"
+                               value="<?= htmlspecialchars($data['ID_BARANG']); ?>"
+                               class="form-control bg-light fw-bold text-dark"
                                readonly>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Nama Barang</label>
+                        <label class="form-label fw-bold text-dark small">NAMA BARANG</label>
                         <input type="text" name="nama" class="form-control"
-                               value="<?= htmlspecialchars($data['nama_barang'] ?? $data['NAMA_BARANG']); ?>"
+                               value="<?= htmlspecialchars($data['NAMA_BARANG']); ?>"
                                required>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Satuan</label>
+                            <label class="form-label fw-bold text-dark small">SATUAN</label>
                             <input type="text" name="satuan" class="form-control"
-                                   value="<?= htmlspecialchars($data['satuan'] ?? $data['SATUAN']); ?>">
+                                   value="<?= htmlspecialchars($data['SATUAN']); ?>" required>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Spesifikasi</label>
+                            <label class="form-label fw-bold text-dark small">SPESIFIKASI</label>
                             <input type="text" name="spek" class="form-control"
-                                   value="<?= htmlspecialchars($data['spesifikasi'] ?? $data['SPESIFIKASI']); ?>">
+                                   value="<?= htmlspecialchars($data['SPESIFIKASI']); ?>">
                         </div>
                     </div>
 
-                    <hr class="my-4">
-
-                    <div class="d-flex justify-content-between">
-                        <a href="index.php"
-                           class="btn btn-outline-secondary px-4 rounded-pill">
-                            Batal
-                        </a>
+                    <div class="d-grid gap-2 mt-4">
                         <button type="submit" name="update"
-                                class="btn btn-warning px-5 rounded-pill fw-bold">
-                            Update Data
+                                class="btn btn-warning py-2 rounded-pill fw-bold text-dark shadow-sm">
+                            <i class="fas fa-save me-2"></i>SIMPAN PERUBAHAN
                         </button>
                     </div>
 

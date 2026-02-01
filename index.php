@@ -1,16 +1,17 @@
+
 <?php 
-// --- KONEKSI DATABASE ---
+// PANGGIL KONEKSI DULUAN
 include 'config/koneksi.php'; 
 
-// --- HEADER ---
+// Panggil header (Navbar & Session Check ada di sini)
 include 'layout/header.php'; 
 
-// --- [LOGIKA PHP DASHBOARD] ---
+// --- [LOGIKA PHP UNTUK DASHBOARD] ---
 
 // 1. Hitung Jumlah Barang
 $jumlah_barang = 0;
-// PERBAIKAN: Ubah 'BARANG' jadi 'barang' (huruf kecil)
-$query_barang = mysqli_query($conn, "SELECT COUNT(*) as total FROM barang");
+// Menggunakan variabel $conn (sesuai config)
+$query_barang = mysqli_query($conn, "SELECT COUNT(*) as total FROM BARANG");
 
 if($query_barang) {
     $data_barang = mysqli_fetch_assoc($query_barang);
@@ -19,15 +20,14 @@ if($query_barang) {
 
 // 2. Hitung Jumlah Transaksi
 $jumlah_transaksi = 0;
-// PERBAIKAN: Ubah 'STOK_PERSEDIAAN' jadi 'stok_persediaan' (huruf kecil)
-$query_trx = mysqli_query($conn, "SELECT COUNT(*) as total FROM stok_persediaan");
+$query_trx = mysqli_query($conn, "SELECT COUNT(*) as total FROM STOK_PERSEDIAAN");
 
 if($query_trx){
     $data_trx = mysqli_fetch_assoc($query_trx);
     $jumlah_transaksi = $data_trx['total'];
 }
 
-// 3. Info Server
+// 3. Cek Host (Info Server)
 $server_host = $_SERVER['SERVER_NAME'];
 ?>
 
@@ -55,14 +55,14 @@ $server_host = $_SERVER['SERVER_NAME'];
 
 <div class="p-5 mb-5 hero-gradient rounded-4 shadow-lg text-white">
     <div class="container-fluid py-2">
-        <h1 class="display-5 fw-bold">Selamat Datang, Admin!</h1> 
+        <h1 class="display-5 fw-bold">Selamat Datang, <?php echo isset($_SESSION['nama']) ? $_SESSION['nama'] : 'Admin'; ?>!</h1> 
         <p class="col-md-8 fs-5 opacity-75">
             Sistem Informasi Inventaris Aset Daerah (SKPD). 
             Pantau stok dan aset secara real-time.
         </p>
         
         <div class="mt-4">
-            <?php if($conn): ?>
+            <?php if($koneksi): ?>
                 <span class="badge bg-white text-success fw-bold p-2 px-3 rounded-pill shadow-sm badge-pulse">
                     <i class="fas fa-check-circle me-1"></i> Database Terhubung
                 </span>
@@ -115,7 +115,7 @@ $server_host = $_SERVER['SERVER_NAME'];
                 <h2 class="fw-bold text-dark mb-1" style="font-size: 2.5rem;">Cetak</h2>
                 <h6 class="text-secondary fw-bold text-uppercase ls-1 mb-3">Laporan Akhir</h6>
                 <p class="card-text text-dark opacity-75 mb-4 small">Rekapitulasi stok dan cetak PDF.</p>
-                <a href="laporan/laporan.php" class="btn btn-outline-info text-dark w-100 rounded-pill py-2 fw-medium mt-auto stretched-link">
+                <a href="laporan/index.php" class="btn btn-outline-info text-dark w-100 rounded-pill py-2 fw-medium mt-auto stretched-link">
                     Lihat Laporan <i class="fas fa-arrow-right ms-2"></i>
                 </a>
             </div>
