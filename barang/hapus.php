@@ -2,33 +2,26 @@
 // File proses, tidak perlu header tampilan
 include '../config/koneksi.php';
 
-// Aktifkan mode error reporting exception untuk MySQLi
-// Agar block try-catch bisa menangkap error database
-mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-
 if (isset($_GET['id'])) {
 
     // Amankan ID dari URL
     $id = mysqli_real_escape_string($conn, $_GET['id']);
 
-    try {
-        // Proses hapus barang
-        // REVISI: Menggunakan $koneksi
-        $sql   = "DELETE FROM barang WHERE id_barang = '$id'";
-        $hapus = mysqli_query($conn, $sql);
+    // Proses hapus barang
+    $sql   = "DELETE FROM barang WHERE id_barang = '$id'";
+    $hapus = mysqli_query($conn, $sql);
 
-        if ($hapus) {
-            echo "<script>
-                alert('✅ Data Barang berhasil dihapus.');
-                window.location = 'index.php';
-            </script>";
-        }
-
-    } catch (mysqli_sql_exception $e) {
-
+    if ($hapus) {
+        echo "<script>
+            alert('✅ Data Barang berhasil dihapus.');
+            window.location = 'index.php';
+        </script>";
+    } else {
+        // Cek jenis error
+        $error_code = mysqli_errno($conn);
+        
         // Error Code 1451: Cannot delete or update a parent row (Foreign Key Fail)
-        // Artinya: Barang ini sedang dipakai di tabel transaksi/detail_stok
-        if ($e->getCode() == 1451) {
+        if ($error_code == 1451) {
             echo "<script>
                 alert('⛔ TIDAK BISA DIHAPUS!\\n\\nBarang ini memiliki riwayat transaksi (masuk/keluar).\\nData historis tidak boleh dihapus sembarangan.');
                 window.location = 'index.php';
@@ -36,7 +29,7 @@ if (isset($_GET['id'])) {
         } else {
             // Error database lainnya
             echo "<script>
-                alert('❌ Error Database: " . $e->getMessage() . "');
+                alert('❌ Error Database: " . mysqli_error($conn) . "');
                 window.location = 'index.php';
             </script>";
         }
@@ -44,7 +37,9 @@ if (isset($_GET['id'])) {
 
 } else {
     // Jika akses langsung tanpa ID
-    header('Location: index.php');
+    echo "<script>
+        window.location = 'index.php';
+    </script>";
     exit;
 }
 ?>
