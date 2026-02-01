@@ -6,8 +6,8 @@
 include '../config/koneksi.php';
 include '../layout/header.php';
 
-// Cek koneksi menggunakan variabel $koneksi
-if (!isset($koneksi)) {
+// Cek koneksi menggunakan variabel $conn
+if (!isset($conn)) {
     die('Koneksi database tidak tersedia. Pastikan config/koneksi.php benar.');
 }
 ?>
@@ -55,8 +55,8 @@ if (!isset($koneksi)) {
                         // =======================================================
                         $query = "
                             SELECT 
-                                h.ID_STOK,
-                                h.TGL_PERIODE,
+                                h.id_stok,
+                                h.tgl_periode,
                                 b.id_barang,
                                 b.nama_barang,
                                 b.satuan,
@@ -83,40 +83,40 @@ if (!isset($koneksi)) {
                             while ($row = mysqli_fetch_assoc($result)) {
                                 
                                 // Logika Badge Masuk/Keluar
-                                if ($row['KUANTITAS_MASUK'] > 0) {
+                                if ($row['kuantitas_masuk'] > 0) {
                                     $badge = "<span class='badge bg-success bg-opacity-10 text-success rounded-pill px-3'><i class='fas fa-arrow-down me-1'></i>Masuk</span>";
-                                    $qty = "+" . $row['KUANTITAS_MASUK'];
+                                    $qty = "+" . $row['kuantitas_masuk'];
                                     $text_class = "text-success";
                                 } else {
                                     $badge = "<span class='badge bg-danger bg-opacity-10 text-danger rounded-pill px-3'><i class='fas fa-arrow-up me-1'></i>Keluar</span>";
-                                    $qty = "-" . $row['KUANTITAS_KELUAR'];
+                                    $qty = "-" . $row['kuantitas_keluar'];
                                     $text_class = "text-danger";
                                 }
                         ?>
                                 <tr>
                                     <td class="ps-4 text-muted fw-medium">
-                                        <?= date('d M Y', strtotime($row['TGL_PERIODE'])); ?>
+                                        <?= date('d M Y', strtotime($row['tgl_periode'])); ?>
                                     </td>
                                     
                                     <td>
-                                        <div class="fw-bold text-dark"><?= htmlspecialchars($row['NAMA_BARANG']); ?></div>
+                                        <div class="fw-bold text-dark"><?= htmlspecialchars($row['nama_barang']); ?></div>
                                         <small class="text-muted" style="font-size: 0.8em;">
-                                            ID: <?= htmlspecialchars($row['ID_BARANG']); ?>
+                                            ID: <?= htmlspecialchars($row['id_barang']); ?>
                                         </small>
                                     </td>
 
                                     <td class="text-center"><?= $badge; ?></td>
 
                                     <td class="text-center fw-bold <?= $text_class; ?>">
-                                        <?= $qty; ?> <small class="text-muted fw-normal"><?= $row['SATUAN']; ?></small>
+                                        <?= $qty; ?> <small class="text-muted fw-normal"><?= $row['satuan']; ?></small>
                                     </td>
 
                                     <td class="text-end fw-medium text-secondary">
-                                        Rp <?= number_format($row['HARGA_SATUAN'], 0, ',', '.'); ?>
+                                        Rp <?= number_format($row['harga_satuan'], 0, ',', '.'); ?>
                                     </td>
 
                                     <td class="text-center pe-4">
-                                        <a href="hapus.php?id=<?= $row['ID_STOK']; ?>"
+                                        <a href="hapus.php?id=<?= $row['id_stok']; ?>"
                                            class="btn btn-sm btn-light text-danger border"
                                            data-bs-toggle="tooltip" title="Hapus Riwayat"
                                            onclick="return confirm('⚠️ Yakin hapus transaksi ini?\n\nStok barang akan otomatis dikembalikan (Rollback).')">

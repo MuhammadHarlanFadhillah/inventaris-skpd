@@ -36,15 +36,15 @@ if (isset($_POST['simpan_transaksi'])) {
             $cek = mysqli_query($conn, "SELECT stok_akhir, nama_barang FROM barang WHERE id_barang = '$id_barang' FOR UPDATE");
             $data_barang = mysqli_fetch_assoc($cek);
 
-            if ($data_barang['STOK_AKHIR'] < $jumlah) {
-                throw new Exception("⛔ Stok tidak cukup! (Sisa: {$data_barang['STOK_AKHIR']}, Diminta: $jumlah)");
+            if ($data_barang['stok_akhir'] < $jumlah) {
+                throw new Exception("⛔ Stok tidak cukup! (Sisa: {$data_barang['stok_akhir']}, Diminta: $jumlah)");
             }
         }
 
         // -----------------------------------------------------------
-        // B. INSERT KE TABEL HEADER (STOK_PERSEDIAAN)
+        // B. INSERT KE TABEL HEADER (stok_persediaan)
         // -----------------------------------------------------------
-        $sql_header = "INSERT INTO STOK_PERSEDIAAN (ID_STOK, ID_SKPD, TGL_PERIODE, STOK_SISA)
+        $sql_header = "INSERT INTO stok_persediaan (id_stok, id_skpd, tgl_periode, stok_sisa)
                        VALUES ('$id_stok', '$id_skpd', '$tanggal', '$jumlah')";
         
         if (!mysqli_query($conn, $sql_header)) {
@@ -52,15 +52,15 @@ if (isset($_POST['simpan_transaksi'])) {
         }
 
         // -----------------------------------------------------------
-        // C. INSERT KE TABEL DETAIL (DETAIL_STOK)
+        // C. INSERT KE TABEL DETAIL (detail_stok)
         // -----------------------------------------------------------
         // CATATAN: Saat query ini berjalan, TRIGGER DATABASE akan OTOMATIS
-        // mengupdate stok di tabel BARANG. Jadi PHP tidak perlu update manual lagi.
+        // mengupdate stok di tabel barang. Jadi PHP tidak perlu update manual lagi.
         
         $q_masuk  = ($jenis == 'MASUK')  ? $jumlah : 0;
         $q_keluar = ($jenis == 'KELUAR') ? $jumlah : 0;
 
-        $sql_detail = "INSERT INTO DETAIL_STOK (ID_STOK, ID_BARANG, HARGA_SATUAN, KUANTITAS_MASUK, KUANTITAS_KELUAR)
+        $sql_detail = "INSERT INTO detail_stok (id_stok, id_barang, harga_satuan, kuantitas_masuk, kuantitas_keluar)
                        VALUES ('$id_stok', '$id_barang', '$harga_fix', '$q_masuk', '$q_keluar')";
 
         if (!mysqli_query($conn, $sql_detail)) {
@@ -68,7 +68,7 @@ if (isset($_POST['simpan_transaksi'])) {
         }
 
         // -----------------------------------------------------------
-        // D. UPDATE STOK DI TABEL BARANG (DIHAPUS)
+        // D. UPDATE STOK DI TABEL barang (DIHAPUS)
         // -----------------------------------------------------------
         // Bagian update manual dihapus karena sudah ditangani oleh Trigger MySQL
         // agar tidak terjadi perhitungan ganda (double counting).
@@ -120,8 +120,8 @@ if (isset($_POST['simpan_transaksi'])) {
                             // Ambil data barang untuk dropdown
                             $b = mysqli_query($conn, "SELECT id_barang, nama_barang, satuan, stok_akhir FROM barang ORDER BY nama_barang ASC");
                             while ($row = mysqli_fetch_assoc($b)) {
-                                echo "<option value='{$row['ID_BARANG']}'>
-                                        {$row['NAMA_BARANG']} (Sisa Stok: {$row['STOK_AKHIR']} {$row['SATUAN']})
+                                echo "<option value='{$row['id_barang']}'>
+                                        {$row['nama_barang']} (Sisa Stok: {$row['stok_akhir']} {$row['satuan']})
                                       </option>";
                             }
                             ?>

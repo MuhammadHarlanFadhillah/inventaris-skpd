@@ -102,17 +102,17 @@ function tgl_indo($tanggal){
             // QUERY JOIN: Menggabungkan 3 Tabel
             $query = "
                 SELECT 
-                    s.TGL_PERIODE, 
+                    s.tgl_periode, 
                     s.id_stok, 
                     b.nama_barang, 
                     b.satuan, 
                     d.kuantitas_masuk, 
                     d.kuantitas_keluar
-                FROM DETAIL_STOK d
-                JOIN STOK_PERSEDIAAN s ON d.ID_STOK = s.ID_STOK
-                JOIN BARANG b ON d.ID_BARANG = b.ID_BARANG
-                WHERE s.TGL_PERIODE BETWEEN '$tgl_awal' AND '$tgl_akhir'
-                ORDER BY s.TGL_PERIODE ASC, s.ID_STOK ASC
+                FROM detail_stok d
+                JOIN stok_persediaan s ON d.id_stok = s.id_stok
+                JOIN barang b ON d.id_barang = b.id_barang
+                WHERE s.tgl_periode BETWEEN '$tgl_awal' AND '$tgl_akhir'
+                ORDER BY s.tgl_periode ASC, s.id_stok ASC
             ";
 
             $exec = mysqli_query($conn, $query);
@@ -123,24 +123,24 @@ function tgl_indo($tanggal){
                 while ($d = mysqli_fetch_assoc($exec)) {
                     
                     // Logika tampilan jenis transaksi
-                    if ($d['KUANTITAS_MASUK'] > 0) {
+                    if ($d['kuantitas_masuk'] > 0) {
                         $jenis = 'MASUK';
-                        $qty   = $d['KUANTITAS_MASUK'];
+                        $qty   = $d['kuantitas_masuk'];
                         $style = 'font-weight:bold;'; // Tebal jika masuk
                     } else {
                         $jenis = 'KELUAR';
-                        $qty   = $d['KUANTITAS_KELUAR'];
+                        $qty   = $d['kuantitas_keluar'];
                         $style = 'font-style:italic;'; // Miring jika keluar
                     }
             ?>
             <tr>
                 <td class="text-center"><?= $no++; ?></td>
-                <td class="text-center"><?= tgl_indo($d['TGL_PERIODE']); ?></td>
-                <td class="text-center font-monospace small"><?= $d['ID_STOK']; ?></td>
-                <td><?= htmlspecialchars($d['NAMA_BARANG']); ?></td>
+                <td class="text-center"><?= tgl_indo($d['tgl_periode']); ?></td>
+                <td class="text-center font-monospace small"><?= $d['id_stok']; ?></td>
+                <td><?= htmlspecialchars($d['nama_barang']); ?></td>
                 <td class="text-center" style="<?= $style; ?>"><?= $jenis; ?></td>
                 <td class="text-center">
-                    <?= $qty . ' ' . htmlspecialchars($d['SATUAN']); ?>
+                    <?= $qty . ' ' . htmlspecialchars($d['satuan']); ?>
                 </td>
             </tr>
             <?php 

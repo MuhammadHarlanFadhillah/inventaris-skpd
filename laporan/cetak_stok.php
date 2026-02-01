@@ -115,8 +115,8 @@ function tgl_indo($tanggal){
             $no = 1;
             // Query ambil semua barang
             $query = mysqli_query($conn, "
-                SELECT * FROM BARANG 
-                ORDER BY NAMA_BARANG ASC
+                SELECT * FROM barang 
+                ORDER BY nama_barang ASC
             ");
 
             if (!$query || mysqli_num_rows($query) == 0) {
@@ -131,12 +131,12 @@ function tgl_indo($tanggal){
             ?>
             <tr>
                 <td class="text-center"><?= $no++; ?></td>
-                <td class="text-center font-monospace small"><?= htmlspecialchars($row['ID_BARANG']); ?></td>
-                <td><?= htmlspecialchars($row['NAMA_BARANG']); ?></td>
-                <td><?= htmlspecialchars($row['SPESIFIKASI']); ?></td>
+                <td class="text-center font-monospace small"><?= htmlspecialchars($row['id_barang']); ?></td>
+                <td><?= htmlspecialchars($row['nama_barang']); ?></td>
+                <td><?= htmlspecialchars($row['spesifikasi']); ?></td>
                 <td class="text-center fw-bold">
-                    <?= $row['STOK_AKHIR']; ?> 
-                    <span class="fw-normal small"><?= htmlspecialchars($row['SATUAN']); ?></span>
+                    <?= $row['stok_akhir']; ?> 
+                    <span class="fw-normal small"><?= htmlspecialchars($row['satuan']); ?></span>
                 </td>
             </tr>
             <?php 
