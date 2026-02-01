@@ -54,8 +54,7 @@ if (isset($_POST['simpan_transaksi'])) {
         // -----------------------------------------------------------
         // C. INSERT KE TABEL DETAIL (detail_stok)
         // -----------------------------------------------------------
-        // CATATAN: Saat query ini berjalan, TRIGGER DATABASE akan OTOMATIS
-        // mengupdate stok di tabel barang. Jadi PHP tidak perlu update manual lagi.
+        // CATATAN: Database clean tidak punya trigger, jadi stok harus diupdate manual di PHP.
         
         $q_masuk  = ($jenis == 'MASUK')  ? $jumlah : 0;
         $q_keluar = ($jenis == 'KELUAR') ? $jumlah : 0;
@@ -68,16 +67,23 @@ if (isset($_POST['simpan_transaksi'])) {
         }
 
         // -----------------------------------------------------------
-        // D. UPDATE STOK DI TABEL barang (DIHAPUS)
+        // D. UPDATE STOK DI TABEL barang (MANUAL)
         // -----------------------------------------------------------
-        // Bagian update manual dihapus karena sudah ditangani oleh Trigger MySQL
-        // agar tidak terjadi perhitungan ganda (double counting).
+        if ($jenis == 'MASUK') {
+            $sql_update = "UPDATE barang SET stok_akhir = stok_akhir + $jumlah WHERE id_barang = '$id_barang'";
+        } else {
+            $sql_update = "UPDATE barang SET stok_akhir = stok_akhir - $jumlah WHERE id_barang = '$id_barang'";
+        }
+
+        if (!mysqli_query($conn, $sql_update)) {
+            throw new Exception("Gagal update stok barang: " . mysqli_error($conn));
+        }
 
         // JIKA SEMUA LANCAR -> COMMIT (SIMPAN PERMANEN)
         mysqli_commit($conn);
         
         echo "<script>
-                alert('✅ Transaksi BERHASIL disimpan!\\nStok barang telah diperbarui otomatis oleh sistem.');
+            alert('✅ Transaksi BERHASIL disimpan!\nStok barang berhasil diperbarui.');
                 window.location = 'index.php';
               </script>";
 
