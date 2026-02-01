@@ -82,7 +82,7 @@ include '../layout/header.php';
                                        data-bs-toggle="tooltip" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="hapus.php?id=<?= $data['ID_BARANG']; ?>" 
+                                                <a href="hapus.php?id=<?= $data['id_barang']; ?>" 
                                        class="btn btn-danger"
                                        onclick="return confirm('Yakin ingin menghapus data ini? Stok terkait mungkin akan error jika dihapus paksa.')"
                                        data-bs-toggle="tooltip" title="Hapus">

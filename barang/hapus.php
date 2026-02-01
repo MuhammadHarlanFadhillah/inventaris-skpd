@@ -2,7 +2,7 @@
 // File proses, tidak perlu header tampilan
 include '../config/koneksi.php';
 
-if (isset($_GET['id'])) {
+if (isset($_GET['id']) && $_GET['id'] !== '') {
 
     // Amankan ID dari URL
     $id = mysqli_real_escape_string($conn, $_GET['id']);
@@ -11,7 +11,7 @@ if (isset($_GET['id'])) {
     $sql   = "DELETE FROM barang WHERE id_barang = '$id'";
     $hapus = mysqli_query($conn, $sql);
 
-    if ($hapus) {
+    if ($hapus && mysqli_affected_rows($conn) > 0) {
         echo "<script>
             alert('✅ Data Barang berhasil dihapus.');
             window.location = 'index.php';
@@ -19,6 +19,13 @@ if (isset($_GET['id'])) {
     } else {
         // Cek jenis error
         $error_code = mysqli_errno($conn);
+        if ($error_code === 0) {
+            echo "<script>
+                alert('⚠️ Data tidak ditemukan atau sudah terhapus.');
+                window.location = 'index.php';
+            </script>";
+            exit;
+        }
         
         // Error Code 1451: Cannot delete or update a parent row (Foreign Key Fail)
         if ($error_code == 1451) {
