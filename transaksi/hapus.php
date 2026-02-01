@@ -10,10 +10,10 @@ if (!isset($_GET['id'])) {
     exit;
 }
 
-$id_stok = mysqli_real_escape_string($koneksi, $_GET['id']);
+$id_stok = mysqli_real_escape_string($conn, $_GET['id']);
 
 // Mulai Transaksi
-mysqli_begin_transaction($koneksi);
+mysqli_begin_transaction($conn);
 
 try {
     // 1. AMBIL DATA LAMA SEBELUM DIHAPUS
@@ -56,7 +56,7 @@ try {
     }
 
     // SUKSES -> COMMIT
-    mysqli_commit($koneksi);
+    mysqli_commit($conn);
 
     echo "<script>
         alert('✅ Transaksi berhasil dihapus.\\nStok barang telah dikembalikan ke posisi semula.');
@@ -65,7 +65,7 @@ try {
 
 } catch (Exception $e) {
     // ERROR -> ROLLBACK
-    mysqli_rollback($koneksi);
+    mysqli_rollback($conn);
     
     echo "<script>
         alert('❌ Gagal menghapus: " . $e->getMessage() . "');

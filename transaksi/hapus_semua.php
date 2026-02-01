@@ -25,7 +25,7 @@ try {
         throw new Exception("Gagal mereset stok barang.");
     }
 
-    mysqli_commit($koneksi);
+    mysqli_commit($conn);
 
     echo "<script>
         alert('✅ DATABASE DI-RESET!\\nSemua riwayat dihapus dan stok barang kembali ke 0.');
@@ -33,7 +33,7 @@ try {
     </script>";
 
 } catch (Exception $e) {
-    mysqli_rollback($koneksi);
+    mysqli_rollback($conn);
     
     echo "<script>
         alert('❌ Gagal Reset: " . $e->getMessage() . "');

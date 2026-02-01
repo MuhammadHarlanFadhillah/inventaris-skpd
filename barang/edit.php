@@ -11,7 +11,7 @@ if (!isset($_GET['id'])) {
 }
 
 // Amankan ID dari URL
-$id_barang = mysqli_real_escape_string($koneksi, $_GET['id']);
+$id_barang = mysqli_real_escape_string($conn, $_GET['id']);
 
 // Ambil data barang berdasarkan ID
 $query_ambil = mysqli_query($conn, "SELECT * FROM barang WHERE id_barang = '$id_barang'");
@@ -31,10 +31,10 @@ if (!$data) {
 // ================================
 if (isset($_POST['update'])) {
 
-    // Sanitasi Input (Wajib pakai $koneksi)
-    $nama   = mysqli_real_escape_string($koneksi, $_POST['nama']);
-    $satuan = mysqli_real_escape_string($koneksi, $_POST['satuan']);
-    $spek   = mysqli_real_escape_string($koneksi, $_POST['spek']);
+    // Sanitasi Input (Wajib pakai $conn)
+    $nama   = mysqli_real_escape_string($conn, $_POST['nama']);
+    $satuan = mysqli_real_escape_string($conn, $_POST['satuan']);
+    $spek   = mysqli_real_escape_string($conn, $_POST['spek']);
 
     // Query Update
     $query_update = "UPDATE barang SET 
@@ -50,7 +50,7 @@ if (isset($_POST['update'])) {
         </script>";
     } else {
         echo "<div class='alert alert-danger mt-3 alert-dismissible fade show'>
-                <strong>Gagal Update:</strong> " . mysqli_error($koneksi) . "
+                <strong>Gagal Update:</strong> " . mysqli_error($conn) . "
                 <button type='button' class='btn-close' data-bs-dismiss='alert'></button>
               </div>";
     }

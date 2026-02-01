@@ -9,7 +9,7 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 if (isset($_GET['id'])) {
 
     // Amankan ID dari URL
-    $id = mysqli_real_escape_string($koneksi, $_GET['id']);
+    $id = mysqli_real_escape_string($conn, $_GET['id']);
 
     try {
         // Proses hapus barang

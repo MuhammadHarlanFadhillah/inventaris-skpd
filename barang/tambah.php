@@ -9,10 +9,10 @@ include '../layout/header.php';
 if (isset($_POST['simpan'])) {
 
     // 1. Tangkap Input & Amankan dari SQL Injection
-    $id     = mysqli_real_escape_string($koneksi, $_POST['id']);
-    $nama   = mysqli_real_escape_string($koneksi, $_POST['nama']);
-    $satuan = mysqli_real_escape_string($koneksi, $_POST['satuan']);
-    $spek   = mysqli_real_escape_string($koneksi, $_POST['spek']);
+    $id     = mysqli_real_escape_string($conn, $_POST['id']);
+    $nama   = mysqli_real_escape_string($conn, $_POST['nama']);
+    $satuan = mysqli_real_escape_string($conn, $_POST['satuan']);
+    $spek   = mysqli_real_escape_string($conn, $_POST['spek']);
 
     // 2. CEK DUPLIKAT ID BARANG
     // Menggunakan variabel $koneksi
@@ -39,7 +39,7 @@ if (isset($_POST['simpan'])) {
                   </script>";
         } else {
             echo "<div class='alert alert-danger alert-dismissible fade show mt-3' role='alert'>
-                    <strong>Error Database:</strong> " . mysqli_error($koneksi) . "
+                    <strong>Error Database:</strong> " . mysqli_error($conn) . "
                     <button type='button' class='btn-close' data-bs-dismiss='alert'></button>
                   </div>";
         }

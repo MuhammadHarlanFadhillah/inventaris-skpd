@@ -9,9 +9,9 @@ include '../layout/header.php';
 if (isset($_POST['simpan_transaksi'])) {
 
     // 1. SANITASI INPUT
-    $id_barang = mysqli_real_escape_string($koneksi, $_POST['id_barang']);
-    $tanggal   = mysqli_real_escape_string($koneksi, $_POST['tanggal']);
-    $jenis     = mysqli_real_escape_string($koneksi, $_POST['jenis']); // MASUK / KELUAR
+    $id_barang = mysqli_real_escape_string($conn, $_POST['id_barang']);
+    $tanggal   = mysqli_real_escape_string($conn, $_POST['tanggal']);
+    $jenis     = mysqli_real_escape_string($conn, $_POST['jenis']); // MASUK / KELUAR
     $jumlah    = (int) $_POST['jumlah'];
 
     // Bersihkan format rupiah (hapus titik)
@@ -24,7 +24,7 @@ if (isset($_POST['simpan_transaksi'])) {
 
     // 3. MULAI TRANSAKSI DATABASE
     // Kita matikan autocommit agar bisa di-Rollback jika error
-    mysqli_begin_transaction($koneksi);
+    mysqli_begin_transaction($conn);
 
     try {
         // -----------------------------------------------------------
@@ -48,7 +48,7 @@ if (isset($_POST['simpan_transaksi'])) {
                        VALUES ('$id_stok', '$id_skpd', '$tanggal', '$jumlah')";
         
         if (!mysqli_query($conn, $sql_header)) {
-            throw new Exception("Gagal simpan header: " . mysqli_error($koneksi));
+            throw new Exception("Gagal simpan header: " . mysqli_error($conn));
         }
 
         // -----------------------------------------------------------
@@ -64,7 +64,7 @@ if (isset($_POST['simpan_transaksi'])) {
                        VALUES ('$id_stok', '$id_barang', '$harga_fix', '$q_masuk', '$q_keluar')";
 
         if (!mysqli_query($conn, $sql_detail)) {
-            throw new Exception("Gagal simpan detail: " . mysqli_error($koneksi));
+            throw new Exception("Gagal simpan detail: " . mysqli_error($conn));
         }
 
         // -----------------------------------------------------------
@@ -74,7 +74,7 @@ if (isset($_POST['simpan_transaksi'])) {
         // agar tidak terjadi perhitungan ganda (double counting).
 
         // JIKA SEMUA LANCAR -> COMMIT (SIMPAN PERMANEN)
-        mysqli_commit($koneksi);
+        mysqli_commit($conn);
         
         echo "<script>
                 alert('✅ Transaksi BERHASIL disimpan!\\nStok barang telah diperbarui otomatis oleh sistem.');
@@ -83,7 +83,7 @@ if (isset($_POST['simpan_transaksi'])) {
 
     } catch (Exception $e) {
         // JIKA ADA ERROR -> ROLLBACK (BATALKAN SEMUA)
-        mysqli_rollback($koneksi);
+        mysqli_rollback($conn);
         
         echo "<div class='alert alert-danger border-0 shadow-sm mt-3 alert-dismissible fade show'>
                 <strong>Transaksi Gagal:</strong> " . $e->getMessage() . "

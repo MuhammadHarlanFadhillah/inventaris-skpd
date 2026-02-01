@@ -5,7 +5,7 @@
 include '../config/koneksi.php';
 
 // 1. Cek Koneksi
-if (!isset($koneksi)) {
+if (!isset($conn)) {
     die("Koneksi database bermasalah.");
 }
 
@@ -15,8 +15,8 @@ if (!isset($_GET['tgl_awal']) || !isset($_GET['tgl_akhir'])) {
 }
 
 // 3. Amankan Input
-$tgl_awal  = mysqli_real_escape_string($koneksi, $_GET['tgl_awal']);
-$tgl_akhir = mysqli_real_escape_string($koneksi, $_GET['tgl_akhir']);
+$tgl_awal  = mysqli_real_escape_string($conn, $_GET['tgl_awal']);
+$tgl_akhir = mysqli_real_escape_string($conn, $_GET['tgl_akhir']);
 
 // 4. Fungsi Tanggal Indo
 function tgl_indo($tanggal){
