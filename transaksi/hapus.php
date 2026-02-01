@@ -18,16 +18,16 @@ mysqli_begin_transaction($koneksi);
 try {
     // 1. AMBIL DATA LAMA SEBELUM DIHAPUS
     // Kita butuh tahu barang apa dan berapa jumlahnya untuk dikembalikan
-    $cek_data = mysqli_query($conn, "SELECT ID_BARANG, KUANTITAS_MASUK, KUANTITAS_KELUAR FROM DETAIL_STOK WHERE ID_STOK = '$id_stok'");
+    $cek_data = mysqli_query($conn, "SELECT id_barang, kuantitas_masuk, kuantitas_keluar FROM detail_stok WHERE id_stok = '$id_stok'");
     $data = mysqli_fetch_assoc($cek_data);
 
     if (!$data) {
         throw new Exception("Data transaksi tidak ditemukan.");
     }
 
-    $id_barang = $data['ID_BARANG'];
-    $masuk     = $data['KUANTITAS_MASUK']; // Contoh: 10
-    $keluar    = $data['KUANTITAS_KELUAR']; // Contoh: 0
+    $id_barang = $data['id_barang'];
+    $masuk     = $data['kuantitas_masuk']; // Contoh: 10
+    $keluar    = $data['kuantitas_keluar']; // Contoh: 0
 
     // 2. LOGIKA ROLLBACK STOK (PENTING!)
     // Jika dulu barang MASUK, sekarang stok harus DIKURANGI.
@@ -35,10 +35,10 @@ try {
     
     if ($masuk > 0) {
         // Hapus transaksi masuk -> Stok dikurangi
-        $sql_update = "UPDATE BARANG SET STOK_AKHIR = STOK_AKHIR - $masuk WHERE ID_BARANG = '$id_barang'";
+        $sql_update = "UPDATE barang SET stok_akhir = stok_akhir - $masuk WHERE id_barang = '$id_barang'";
     } else {
         // Hapus transaksi keluar -> Stok dikembalikan (ditambah)
-        $sql_update = "UPDATE BARANG SET STOK_AKHIR = STOK_AKHIR + $keluar WHERE ID_BARANG = '$id_barang'";
+        $sql_update = "UPDATE barang SET stok_akhir = stok_akhir + $keluar WHERE id_barang = '$id_barang'";
     }
 
     if (!mysqli_query($conn, $sql_update)) {
@@ -46,12 +46,12 @@ try {
     }
 
     // 3. HAPUS DETAIL TRANSAKSI
-    if (!mysqli_query($conn, "DELETE FROM DETAIL_STOK WHERE ID_STOK = '$id_stok'")) {
+    if (!mysqli_query($conn, "DELETE FROM detail_stok WHERE id_stok = '$id_stok'")) {
         throw new Exception("Gagal hapus detail.");
     }
 
     // 4. HAPUS HEADER TRANSAKSI
-    if (!mysqli_query($conn, "DELETE FROM STOK_PERSEDIAAN WHERE ID_STOK = '$id_stok'")) {
+    if (!mysqli_query($conn, "DELETE FROM stok_persediaan WHERE id_stok = '$id_stok'")) {
         throw new Exception("Gagal hapus header.");
     }
 

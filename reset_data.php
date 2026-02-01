@@ -21,7 +21,7 @@ if(isset($_POST['reset_semua'])){
     mysqli_query($conn, "SET FOREIGN_KEY_CHECKS = 1");
 
     // 2. Reset Stok Barang jadi 0
-    mysqli_query($conn, "UPDATE BARANG SET STOK_AKHIR = 0");
+    mysqli_query($conn, "UPDATE barang SET stok_akhir = 0");
 
     echo "<script>alert('✅ Sistem berhasil di-reset! Semua transaksi dihapus, Stok kembali 0.'); window.location='index.php';</script>";
 }

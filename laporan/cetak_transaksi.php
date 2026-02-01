@@ -103,11 +103,11 @@ function tgl_indo($tanggal){
             $query = "
                 SELECT 
                     s.TGL_PERIODE, 
-                    s.ID_STOK, 
-                    b.NAMA_BARANG, 
-                    b.SATUAN, 
-                    d.KUANTITAS_MASUK, 
-                    d.KUANTITAS_KELUAR
+                    s.id_stok, 
+                    b.nama_barang, 
+                    b.satuan, 
+                    d.kuantitas_masuk, 
+                    d.kuantitas_keluar
                 FROM DETAIL_STOK d
                 JOIN STOK_PERSEDIAAN s ON d.ID_STOK = s.ID_STOK
                 JOIN BARANG b ON d.ID_BARANG = b.ID_BARANG
