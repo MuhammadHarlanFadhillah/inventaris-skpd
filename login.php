@@ -1,40 +1,27 @@
 <?php
 session_start();
-// Pastikan path ini benar mengarah ke file koneksi.php
+// Pastikan file koneksi.php ada di folder config
 include 'config/koneksi.php';
 
-if (isset($_POST['btn_login'])) {
-    // Ambil input
-    $username = mysqli_real_escape_string($conn, $_POST['username']);
-    // Pastikan enkripsi password di database memang MD5. Kalau plain text, hapus md5().
+if(isset($_POST['btn_login'])){
+    // Ambil input dan amankan string
+    $username = mysqli_real_escape_string($koneksi, $_POST['username']); 
     $password = md5($_POST['password']); 
 
-    // PERBAIKAN 1: Tabel 'user' huruf kecil (Wajib buat Railway/Linux)
-    // PERBAIKAN 2: Kolom 'username' & 'password' asumsi huruf kecil
-    $query = mysqli_query($conn, "SELECT * FROM user WHERE username='$username' AND password='$password'");
-    
-    // Cek error query buat debugging kalau masih gagal
-    if (!$query) {
-        die("Query Error: " . mysqli_error($conn));
-    }
+    // Cek Database
+    $query = mysqli_query($koneksi, "SELECT * FROM USER WHERE USERNAME='$username' AND PASSWORD='$password'");
+    $cek   = mysqli_num_rows($query);
 
-    $cek = mysqli_num_rows($query);
-
-    if ($cek > 0) {
+    if($cek > 0){
         $data = mysqli_fetch_assoc($query);
-
-        // Regenerate ID biar aman (Security Best Practice)
-        session_regenerate_id(true);
-
-        // PERBAIKAN 3: Key array huruf kecil (sesuai output mysqli_fetch_assoc standar)
-        // Gunakan Null Coalescing (??) buat jaga-jaga kalau di DB lu kolomnya kapital
+        
         $_SESSION['status']   = "login";
-        $_SESSION['id_user']  = $data['id_user'] ?? $data['ID_USER']; 
-        $_SESSION['nama']     = $data['nama_lengkap'] ?? $data['NAMA_LENGKAP'];
-        $_SESSION['level']    = $data['level'] ?? $data['LEVEL'];
+        $_SESSION['id_user']  = $data['ID_USER'];
+        $_SESSION['nama']     = $data['NAMA_LENGKAP'];
+        $_SESSION['level']    = $data['LEVEL'];
 
         echo "<script>
-                alert('Selamat Datang, " . ($_SESSION['nama']) . "!');
+                alert('Selamat Datang, " . $data['NAMA_LENGKAP'] . "!');
                 window.location='index.php';
               </script>";
     } else {
@@ -54,38 +41,48 @@ if (isset($_POST['btn_login'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        * {
+        /* PERBAIKAN CSS DI SINI */
+        html, body {
+            height: 100%; /* Pastikan root element mengambil tinggi penuh */
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-        html, body {
-            height: 100%;
             width: 100%;
-            overflow-x: hidden;
         }
+
         body {
             background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+            /* Gunakan min-height, bukan height biasa agar tidak memotong konten di layar kecil */
+            min-height: 100vh; 
+            
+            /* Flexbox untuk menengahkan */
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
+            
+            /* Mencegah scrollbar horizontal muncul yang sering bikin geser */
+            overflow-x: hidden; 
         }
+
         .container {
+            /* Memastikan container tidak melebihi lebar layar */
             width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
+            padding-right: 15px;
+            padding-left: 15px;
+            margin-right: auto;
+            margin-left: auto;
         }
+
         .card-login {
             border: none;
             border-radius: 15px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
             overflow: hidden;
             width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
+            /* Max-width menjaga agar di PC tidak kelebaran, tapi di HP tetap full */
+            max-width: 400px; 
+            margin: 0 auto; /* Pastikan card rata tengah di dalam kolomnya */
         }
+
         .btn-login {
             border-radius: 50px;
             font-weight: bold;
@@ -101,8 +98,9 @@ if (isset($_POST['btn_login'])) {
 <body>
 
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-5">
+        <div class="row justify-content-center w-100 m-0">
+            <div class="col-md-5 col-lg-4 mx-auto"> 
+                
                 <div class="card card-login bg-white">
                     <div class="card-header pt-4 bg-white border-0 text-center">
                         <div class="text-primary mb-2"><i class="fas fa-boxes fa-3x"></i></div>
@@ -134,9 +132,10 @@ if (isset($_POST['btn_login'])) {
                         </form>
                     </div>
                     <div class="card-footer bg-light text-center py-3">
-                        <small class="text-muted">&copy; <?php echo date('Y'); ?> IF-3 UNIKOM</small>
+                        <small class="text-muted">&copy; <?php echo date('Y'); ?> Inventaris SKPD</small>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
