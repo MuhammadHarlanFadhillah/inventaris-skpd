@@ -54,12 +54,28 @@ if (isset($_POST['btn_login'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+        }
         body {
             background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
-            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
         }
         .card-login {
             border: none;
@@ -68,6 +84,7 @@ if (isset($_POST['btn_login'])) {
             overflow: hidden;
             width: 100%;
             max-width: 400px;
+            margin: 0 auto;
         }
         .btn-login {
             border-radius: 50px;
