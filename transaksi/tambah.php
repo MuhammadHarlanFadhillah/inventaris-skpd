@@ -120,53 +120,39 @@ if (isset($_POST['simpan_transaksi'])) {
 
                     <div class="mb-4">
                         <label class="form-label fw-bold small text-muted">PILIH BARANG</label>
-                        <input type="text" id="searchBarang" class="form-control form-control-lg" placeholder="🔍 Cari nama barang..." style="border: 1px solid #0d6efd; border-bottom: 0; border-radius: 0.375rem 0.375rem 0 0;">
-                        <select name="id_barang" id="selectBarang" class="form-select form-select-lg" style="width: 100%; border: 1px solid #0d6efd; border-top: 0; border-radius: 0 0 0.375rem 0.375rem;" required>
-                            <option value="">-- Pilih Barang --</option>
+                        <input type="text" id="searchBarang" list="barangList" class="form-control form-control-lg" placeholder="🔍 Cari nama barang..." required style="border: 1px solid #0d6efd;">
+                        <datalist id="barangList">
                             <?php
-                            // Ambil data barang untuk dropdown (sudah sorted A-Z)
+                            // Ambil data barang untuk datalist (sudah sorted A-Z)
                             $b = mysqli_query($conn, "SELECT id_barang, nama_barang, satuan, stok_akhir FROM barang ORDER BY nama_barang ASC");
                             while ($row = mysqli_fetch_assoc($b)) {
-                                echo "<option value='{$row['id_barang']}' data-name='{$row['nama_barang']}'>{$row['nama_barang']} (Stok: {$row['stok_akhir']} {$row['satuan']})</option>";
+                                echo "<option value='{$row['nama_barang']}' data-id='{$row['id_barang']}'>{$row['nama_barang']} (Stok: {$row['stok_akhir']} {$row['satuan']})</option>";
                             }
                             ?>
-                        </select>
+                        </datalist>
+                        <input type="hidden" name="id_barang" id="id_barang">
                     </div>
 
                     <script>
-                    // Filter dropdown barang saat user mengetik di search box
-                    document.getElementById('searchBarang').addEventListener('keyup', function() {
-                        const searchValue = this.value.toLowerCase();
-                        const selectElement = document.getElementById('selectBarang');
-                        const options = selectElement.querySelectorAll('option');
-                        let visibleCount = 0;
+                    // Saat user memilih dari datalist, simpan ID barang ke hidden input
+                    document.getElementById('searchBarang').addEventListener('change', function() {
+                        const selectedText = this.value;
+                        const datalist = document.getElementById('barangList');
+                        const options = datalist.querySelectorAll('option');
                         
-                        options.forEach(option => {
-                            if (option.value === '') {
-                                option.style.display = 'block'; // Selalu tampilkan placeholder
-                                return;
+                        for (let option of options) {
+                            if (option.value === selectedText) {
+                                document.getElementById('id_barang').value = option.getAttribute('data-id');
+                                break;
                             }
-                            
-                            const optionText = option.getAttribute('data-name').toLowerCase();
-                            if (optionText.includes(searchValue)) {
-                                option.style.display = 'block';
-                                visibleCount++;
-                            } else {
-                                option.style.display = 'none';
-                            }
-                        });
-                        
-                        // Auto-open dropdown jika ada hasil pencarian
-                        if (searchValue.length > 0 && visibleCount > 0) {
-                            selectElement.size = Math.min(visibleCount + 1, 8);
-                        } else {
-                            selectElement.size = 1;
                         }
                     });
-                    
-                    // Reset size saat blur
-                    document.getElementById('selectBarang').addEventListener('blur', function() {
-                        this.size = 1;
+
+                    // Clear hidden input jika search field di-clear
+                    document.getElementById('searchBarang').addEventListener('input', function() {
+                        if (this.value === '') {
+                            document.getElementById('id_barang').value = '';
+                        }
                     });
                     </script>
 
