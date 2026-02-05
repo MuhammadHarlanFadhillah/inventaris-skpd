@@ -118,40 +118,89 @@ if (isset($_POST['simpan_transaksi'])) {
             <div class="card-body p-4 bg-white">
                 <form method="POST" autocomplete="off" id="formTransaksi" onsubmit="return disableButton()">
 
-                    <div class="mb-4">
+                    <div class="mb-4 position-relative">
                         <label class="form-label fw-bold small text-muted">PILIH BARANG</label>
-                        <input type="text" id="searchBarang" list="barangList" class="form-control form-control-lg" placeholder="🔍 Cari nama barang..." required style="border: 1px solid #0d6efd;">
-                        <datalist id="barangList">
+                        <input type="text" id="searchBarang" class="form-control form-control-lg" placeholder="🔍 Cari nama barang..." autocomplete="off" style="border: 1px solid #0d6efd;">
+                        <input type="hidden" name="id_barang" id="id_barang" required>
+                        
+                        <!-- Custom Dropdown List -->
+                        <div id="dropdownList" class="border rounded bg-white position-absolute w-100" style="max-height: 300px; overflow-y: auto; z-index: 1000; display: none; border: 1px solid #0d6efd !important; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
                             <?php
-                            // Ambil data barang untuk datalist (sudah sorted A-Z)
+                            // Ambil data barang untuk dropdown (sudah sorted A-Z)
                             $b = mysqli_query($conn, "SELECT id_barang, nama_barang, satuan, stok_akhir FROM barang ORDER BY nama_barang ASC");
                             while ($row = mysqli_fetch_assoc($b)) {
-                                echo "<option value='{$row['nama_barang']}' data-id='{$row['id_barang']}'>{$row['nama_barang']} (Stok: {$row['stok_akhir']} {$row['satuan']})</option>";
+                                echo "<div class='dropdown-item p-3 border-bottom' data-id='{$row['id_barang']}' data-name='{$row['nama_barang']}' style='cursor: pointer;'>
+                                        <strong>{$row['nama_barang']}</strong><br>
+                                        <small class='text-muted'>Stok: {$row['stok_akhir']} {$row['satuan']}</small>
+                                      </div>";
                             }
                             ?>
-                        </datalist>
-                        <input type="hidden" name="id_barang" id="id_barang">
+                        </div>
                     </div>
 
                     <script>
-                    // Saat user memilih dari datalist, simpan ID barang ke hidden input
-                    document.getElementById('searchBarang').addEventListener('change', function() {
-                        const selectedText = this.value;
-                        const datalist = document.getElementById('barangList');
-                        const options = datalist.querySelectorAll('option');
-                        
-                        for (let option of options) {
-                            if (option.value === selectedText) {
-                                document.getElementById('id_barang').value = option.getAttribute('data-id');
-                                break;
-                            }
-                        }
+                    const searchInput = document.getElementById('searchBarang');
+                    const hiddenInput = document.getElementById('id_barang');
+                    const dropdownList = document.getElementById('dropdownList');
+                    const dropdownItems = dropdownList.querySelectorAll('.dropdown-item');
+
+                    // Show dropdown saat focus
+                    searchInput.addEventListener('focus', function() {
+                        dropdownList.style.display = 'block';
+                        filterItems('');
                     });
 
-                    // Clear hidden input jika search field di-clear
-                    document.getElementById('searchBarang').addEventListener('input', function() {
-                        if (this.value === '') {
-                            document.getElementById('id_barang').value = '';
+                    // Filter items saat mengetik
+                    searchInput.addEventListener('input', function() {
+                        const searchValue = this.value.toLowerCase();
+                        filterItems(searchValue);
+                        dropdownList.style.display = 'block';
+                        hiddenInput.value = ''; // Clear hidden input saat ketik
+                    });
+
+                    // Function untuk filter items
+                    function filterItems(searchValue) {
+                        let visibleCount = 0;
+                        dropdownItems.forEach(item => {
+                            const itemName = item.getAttribute('data-name').toLowerCase();
+                            if (itemName.includes(searchValue)) {
+                                item.style.display = 'block';
+                                visibleCount++;
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                        
+                        // Hide dropdown jika tidak ada hasil
+                        if (visibleCount === 0) {
+                            dropdownList.innerHTML = '<div class="p-3 text-muted">Barang tidak ditemukan</div>';
+                        }
+                    }
+
+                    // Pilih item dari dropdown
+                    dropdownItems.forEach(item => {
+                        item.addEventListener('click', function() {
+                            const itemName = this.getAttribute('data-name');
+                            const itemId = this.getAttribute('data-id');
+                            
+                            searchInput.value = itemName;
+                            hiddenInput.value = itemId;
+                            dropdownList.style.display = 'none';
+                        });
+
+                        // Hover effect
+                        item.addEventListener('mouseenter', function() {
+                            this.style.backgroundColor = '#f8f9fa';
+                        });
+                        item.addEventListener('mouseleave', function() {
+                            this.style.backgroundColor = '#fff';
+                        });
+                    });
+
+                    // Hide dropdown saat klik di luar
+                    document.addEventListener('click', function(e) {
+                        if (!searchInput.contains(e.target) && !dropdownList.contains(e.target)) {
+                            dropdownList.style.display = 'none';
                         }
                     });
                     </script>
