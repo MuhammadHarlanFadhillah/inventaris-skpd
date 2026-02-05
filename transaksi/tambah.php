@@ -138,10 +138,30 @@ if (isset($_POST['simpan_transaksi'])) {
                     $(document).ready(function() {
                         $('#selectBarang').select2({
                             placeholder: '🔍 Cari nama barang...',
+                            searchInputPlaceholder: '🔍 Ketik nama barang...',
                             allowClear: true,
+                            width: '100%',
+                            theme: 'bootstrap-5',
+                            minimumInputLength: 0,
+                            matcher: function (params, data) {
+                                // Jika tidak ada input, tampilkan semua
+                                if ($.trim(params.term) === '') {
+                                    return data;
+                                }
+
+                                // Match dari bagian manapun (tidak harus dari awal)
+                                if (data.text.toUpperCase().indexOf(params.term.toUpperCase()) > -1) {
+                                    return data;
+                                }
+
+                                return null;
+                            },
                             language: {
                                 searching: function() {
                                     return 'Mencari...';
+                                },
+                                noResults: function() {
+                                    return 'Barang tidak ditemukan';
                                 }
                             }
                         });
