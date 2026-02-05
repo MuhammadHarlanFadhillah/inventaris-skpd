@@ -120,19 +120,43 @@ if (isset($_POST['simpan_transaksi'])) {
 
                     <div class="mb-4">
                         <label class="form-label fw-bold small text-muted">PILIH BARANG</label>
-                        <select name="id_barang" class="form-select form-select-lg bg-light border-0 fw-bold" required>
+                        <input type="text" id="searchBarang" class="form-control mb-2" placeholder="🔍 Cari nama barang...">
+                        <select name="id_barang" id="selectBarang" class="form-select form-select-lg bg-light border-0 fw-bold" required>
                             <option value="">-- Cari Nama Barang --</option>
                             <?php
-                            // Ambil data barang untuk dropdown
+                            // Ambil data barang untuk dropdown (sudah sorted A-Z)
                             $b = mysqli_query($conn, "SELECT id_barang, nama_barang, satuan, stok_akhir FROM barang ORDER BY nama_barang ASC");
                             while ($row = mysqli_fetch_assoc($b)) {
-                                echo "<option value='{$row['id_barang']}'>
+                                echo "<option value='{$row['id_barang']}' data-name='{$row['nama_barang']}'>
                                         {$row['nama_barang']} (Sisa Stok: {$row['stok_akhir']} {$row['satuan']})
                                       </option>";
                             }
                             ?>
                         </select>
                     </div>
+
+                    <script>
+                    // Filter dropdown barang saat user mengetik di search box
+                    document.getElementById('searchBarang').addEventListener('keyup', function() {
+                        const searchValue = this.value.toLowerCase();
+                        const selectElement = document.getElementById('selectBarang');
+                        const options = selectElement.querySelectorAll('option');
+                        
+                        options.forEach(option => {
+                            if (option.value === '') {
+                                option.style.display = 'block'; // Selalu tampilkan placeholder
+                                return;
+                            }
+                            
+                            const optionText = option.getAttribute('data-name').toLowerCase();
+                            if (optionText.includes(searchValue)) {
+                                option.style.display = 'block';
+                            } else {
+                                option.style.display = 'none';
+                            }
+                        });
+                    });
+                    </script>
 
                     <div class="row">
                         <div class="col-md-6 mb-4">

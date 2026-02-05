@@ -40,7 +40,8 @@ if (!isset($conn)) {
                 <table class="table table-hover align-middle mb-0 w-100" id="datatable">
                     <thead class="bg-light text-secondary">
                         <tr>
-                            <th class="py-3 ps-4">Tanggal</th>
+                            <th class="py-3 ps-4">ID Transaksi</th>
+                            <th class="py-3">Tanggal</th>
                             <th class="py-3">Barang</th>
                             <th class="py-3 text-center">Jenis</th>
                             <th class="py-3 text-center">Qty</th>
@@ -74,7 +75,7 @@ if (!isset($conn)) {
                         if (!$result || mysqli_num_rows($result) == 0) {
                             // TAMPILAN JIKA KOSONG
                             echo "<tr>
-                                    <td colspan='6' class='text-center py-5 text-muted'>
+                                    <td colspan='7' class='text-center py-5 text-muted'>
                                         <img src='https://cdn-icons-png.flaticon.com/512/4076/4076432.png' width='60' class='mb-3 opacity-50'>
                                         <p>Belum ada riwayat transaksi.</p>
                                     </td>
@@ -94,6 +95,9 @@ if (!isset($conn)) {
                                 }
                         ?>
                                 <tr>
+                                    <td class="ps-4 text-muted fw-medium font-monospace small">
+                                        <?= htmlspecialchars($row['id_stok']); ?>
+                                    </td>
                                     <td class="ps-4 text-muted fw-medium">
                                         <?= date('d M Y', strtotime($row['tgl_periode'])); ?>
                                     </td>
