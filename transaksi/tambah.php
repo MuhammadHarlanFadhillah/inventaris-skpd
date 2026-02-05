@@ -134,6 +134,32 @@ if (isset($_POST['simpan_transaksi'])) {
 
                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+                    <style>
+                        /* Style Select2 agar terlihat seperti input field */
+                        .select2-container--bootstrap-5 .select2-selection {
+                            border: 1px solid #0d6efd !important;
+                            border-radius: 0.375rem;
+                            padding: 0.5rem 0.75rem;
+                            min-height: 44px;
+                            font-size: 1.1rem;
+                            background-color: #fff;
+                        }
+                        .select2-container--bootstrap-5.select2-container--focus .select2-selection {
+                            border-color: #0d6efd !important;
+                            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+                        }
+                        .select2-container--bootstrap-5 .select2-selection--single {
+                            padding: 0.5rem 0.75rem;
+                        }
+                        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+                            padding: 0;
+                            line-height: 1.5;
+                        }
+                        .select2-dropdown {
+                            border: 1px solid #0d6efd !important;
+                            border-radius: 0.375rem;
+                        }
+                    </style>
                     <script>
                     $(document).ready(function() {
                         $('#selectBarang').select2({
