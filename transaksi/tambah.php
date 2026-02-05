@@ -120,55 +120,31 @@ if (isset($_POST['simpan_transaksi'])) {
 
                     <div class="mb-4">
                         <label class="form-label fw-bold small text-muted">PILIH BARANG</label>
-                        <input type="text" id="searchBarang" class="form-control form-control-lg bg-light mb-2" placeholder="🔍 Cari nama barang...">
-                        <select name="id_barang" id="selectBarang" class="form-select form-select-lg bg-light border-0 fw-bold" required>
-                            <option value="">-- Cari Nama Barang --</option>
+                        <select name="id_barang" id="selectBarang" class="form-select form-select-lg" style="width: 100%;" required>
+                            <option value="">-- Pilih Barang --</option>
                             <?php
                             // Ambil data barang untuk dropdown (sudah sorted A-Z)
                             $b = mysqli_query($conn, "SELECT id_barang, nama_barang, satuan, stok_akhir FROM barang ORDER BY nama_barang ASC");
                             while ($row = mysqli_fetch_assoc($b)) {
-                                echo "<option value='{$row['id_barang']}' data-name='{$row['nama_barang']}'>
-                                        {$row['nama_barang']} (Sisa Stok: {$row['stok_akhir']} {$row['satuan']})
-                                      </option>";
+                                echo "<option value='{$row['id_barang']}'>{$row['nama_barang']} (Stok: {$row['stok_akhir']} {$row['satuan']})</option>";
                             }
                             ?>
                         </select>
                     </div>
 
+                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
                     <script>
-                    // Filter dropdown barang saat user mengetik di search box
-                    document.getElementById('searchBarang').addEventListener('keyup', function() {
-                        const searchValue = this.value.toLowerCase();
-                        const selectElement = document.getElementById('selectBarang');
-                        const options = selectElement.querySelectorAll('option');
-                        let visibleCount = 0;
-                        
-                        options.forEach(option => {
-                            if (option.value === '') {
-                                option.style.display = 'block'; // Selalu tampilkan placeholder
-                                return;
-                            }
-                            
-                            const optionText = option.getAttribute('data-name').toLowerCase();
-                            if (optionText.includes(searchValue)) {
-                                option.style.display = 'block';
-                                visibleCount++;
-                            } else {
-                                option.style.display = 'none';
+                    $(document).ready(function() {
+                        $('#selectBarang').select2({
+                            placeholder: '🔍 Cari nama barang...',
+                            allowClear: true,
+                            language: {
+                                searching: function() {
+                                    return 'Mencari...';
+                                }
                             }
                         });
-                        
-                        // Auto-open dropdown jika ada hasil pencarian
-                        if (searchValue.length > 0 && visibleCount > 0) {
-                            selectElement.size = Math.min(visibleCount + 1, 8);
-                        } else {
-                            selectElement.size = 1;
-                        }
-                    });
-                    
-                    // Reset size saat blur
-                    document.getElementById('selectBarang').addEventListener('blur', function() {
-                        this.size = 1;
                     });
                     </script>
 
