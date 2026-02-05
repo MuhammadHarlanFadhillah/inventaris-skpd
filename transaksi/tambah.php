@@ -120,77 +120,53 @@ if (isset($_POST['simpan_transaksi'])) {
 
                     <div class="mb-4">
                         <label class="form-label fw-bold small text-muted">PILIH BARANG</label>
-                        <select name="id_barang" id="selectBarang" class="form-select form-select-lg" style="width: 100%;" required>
+                        <input type="text" id="searchBarang" class="form-control form-control-lg" placeholder="🔍 Cari nama barang..." style="border: 1px solid #0d6efd; border-bottom: 0; border-radius: 0.375rem 0.375rem 0 0;">
+                        <select name="id_barang" id="selectBarang" class="form-select form-select-lg" style="width: 100%; border: 1px solid #0d6efd; border-top: 0; border-radius: 0 0 0.375rem 0.375rem;" required>
                             <option value="">-- Pilih Barang --</option>
                             <?php
                             // Ambil data barang untuk dropdown (sudah sorted A-Z)
                             $b = mysqli_query($conn, "SELECT id_barang, nama_barang, satuan, stok_akhir FROM barang ORDER BY nama_barang ASC");
                             while ($row = mysqli_fetch_assoc($b)) {
-                                echo "<option value='{$row['id_barang']}'>{$row['nama_barang']} (Stok: {$row['stok_akhir']} {$row['satuan']})</option>";
+                                echo "<option value='{$row['id_barang']}' data-name='{$row['nama_barang']}'>{$row['nama_barang']} (Stok: {$row['stok_akhir']} {$row['satuan']})</option>";
                             }
                             ?>
                         </select>
                     </div>
 
-                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-                    <style>
-                        /* Style Select2 agar terlihat seperti input field */
-                        .select2-container--bootstrap-5 .select2-selection {
-                            border: 1px solid #0d6efd !important;
-                            border-radius: 0.375rem;
-                            padding: 0.5rem 0.75rem;
-                            min-height: 44px;
-                            font-size: 1.1rem;
-                            background-color: #fff;
-                        }
-                        .select2-container--bootstrap-5.select2-container--focus .select2-selection {
-                            border-color: #0d6efd !important;
-                            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-                        }
-                        .select2-container--bootstrap-5 .select2-selection--single {
-                            padding: 0.5rem 0.75rem;
-                        }
-                        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
-                            padding: 0;
-                            line-height: 1.5;
-                        }
-                        .select2-dropdown {
-                            border: 1px solid #0d6efd !important;
-                            border-radius: 0.375rem;
-                        }
-                    </style>
                     <script>
-                    $(document).ready(function() {
-                        $('#selectBarang').select2({
-                            placeholder: '🔍 Cari nama barang...',
-                            searchInputPlaceholder: '🔍 Ketik nama barang...',
-                            allowClear: true,
-                            width: '100%',
-                            theme: 'bootstrap-5',
-                            minimumInputLength: 0,
-                            matcher: function (params, data) {
-                                // Jika tidak ada input, tampilkan semua
-                                if ($.trim(params.term) === '') {
-                                    return data;
-                                }
-
-                                // Match dari bagian manapun (tidak harus dari awal)
-                                if (data.text.toUpperCase().indexOf(params.term.toUpperCase()) > -1) {
-                                    return data;
-                                }
-
-                                return null;
-                            },
-                            language: {
-                                searching: function() {
-                                    return 'Mencari...';
-                                },
-                                noResults: function() {
-                                    return 'Barang tidak ditemukan';
-                                }
+                    // Filter dropdown barang saat user mengetik di search box
+                    document.getElementById('searchBarang').addEventListener('keyup', function() {
+                        const searchValue = this.value.toLowerCase();
+                        const selectElement = document.getElementById('selectBarang');
+                        const options = selectElement.querySelectorAll('option');
+                        let visibleCount = 0;
+                        
+                        options.forEach(option => {
+                            if (option.value === '') {
+                                option.style.display = 'block'; // Selalu tampilkan placeholder
+                                return;
+                            }
+                            
+                            const optionText = option.getAttribute('data-name').toLowerCase();
+                            if (optionText.includes(searchValue)) {
+                                option.style.display = 'block';
+                                visibleCount++;
+                            } else {
+                                option.style.display = 'none';
                             }
                         });
+                        
+                        // Auto-open dropdown jika ada hasil pencarian
+                        if (searchValue.length > 0 && visibleCount > 0) {
+                            selectElement.size = Math.min(visibleCount + 1, 8);
+                        } else {
+                            selectElement.size = 1;
+                        }
+                    });
+                    
+                    // Reset size saat blur
+                    document.getElementById('selectBarang').addEventListener('blur', function() {
+                        this.size = 1;
                     });
                     </script>
 
