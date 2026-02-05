@@ -83,7 +83,7 @@ if (isset($_POST['simpan_transaksi'])) {
         mysqli_commit($conn);
         
         echo "<script>
-            alert('✅ Transaksi BERHASIL disimpan!\nStok barang berhasil diperbarui.');
+                alert('✅ Transaksi BERHASIL disimpan!\\nStok barang berhasil diperbarui.');
                 window.location = 'index.php';
               </script>";
 
